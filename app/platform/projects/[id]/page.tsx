@@ -6,7 +6,7 @@ import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import { ProjectOverview } from './_components/ProjectOverview';
 import { ProjectDetails } from './types';
-import { Loader2 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ProjectOverviewPage() {
     const params = useParams();
@@ -48,8 +48,12 @@ export default function ProjectOverviewPage() {
 
     if (loading) {
         return (
-            <div className="flex h-full items-center justify-center p-8">
-                <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+            <div className="space-y-6 p-4">
+                <Skeleton className="h-8 w-48 bg-white/10" />
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <Skeleton className="col-span-2 h-64 bg-white/10 rounded-lg" />
+                    <Skeleton className="h-64 bg-white/10 rounded-lg" />
+                </div>
             </div>
         );
     }

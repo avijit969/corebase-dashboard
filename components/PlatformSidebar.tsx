@@ -59,7 +59,85 @@ export function PlatformSidebar() {
     }, [projectId]);
 
     return (
-        <aside className="w-64 border-r border-white/10 bg-black p-4 hidden md:flex flex-col sticky top-0 h-screen z-50">
+        <aside className="w-64 border-r border-white/10 bg-black hidden md:flex flex-col sticky top-0 h-screen z-50">
+            <SidebarContent projects={projects} currentProject={currentProject} isProjectView={isProjectView} projectId={projectId} router={router} setCurrentProject={setCurrentProject} />
+        </aside>
+    );
+}
+
+export function MobileSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+    const pathname = usePathname();
+    const router = useRouter();
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [currentProject, setCurrentProject] = useState<Project | null>(null);
+
+    // Check if we are in a project view
+    const isProjectView = pathname?.includes('/platform/projects/');
+    const projectId = isProjectView ? pathname?.split('/')[3] : null;
+
+    useEffect(() => {
+        const fetchProjects = async () => {
+            const token = localStorage.getItem("platform_token");
+            if (!token) return;
+            try {
+                const data = await api.projects.list(token);
+                let projectsList: Project[] = [];
+                if (Array.isArray(data)) {
+                    projectsList = data;
+                } else if (data && Array.isArray((data as any).projects)) {
+                    projectsList = (data as any).projects;
+                } else if (data && Array.isArray((data as any).data)) {
+                    projectsList = (data as any).data;
+                }
+                setProjects(projectsList);
+
+                if (projectId) {
+                    const current = projectsList.find(p => p.id === projectId);
+                    if (current) setCurrentProject(current);
+                }
+            } catch (e) {
+                console.error("Failed to fetch projects for sidebar", e);
+            }
+        };
+        fetchProjects();
+    }, [projectId]);
+
+    useEffect(() => {
+        if (isOpen) {
+            onClose();
+        }
+    }, [pathname]);
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 z-50 flex md:hidden">
+            {/* Backdrop */}
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
+
+            {/* Sidebar Panel */}
+            <div className="relative flex-1 w-full max-w-xs bg-black border-r border-white/10 p-4 h-full overflow-y-auto animate-in slide-in-from-left duration-300">
+                <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-gray-400" onClick={onClose}>
+                    <LogOut className="w-5 h-5 rotate-180" /> {/* Using LogOut as a generic back/close icon style or replace with X */}
+                </Button>
+                <div className="mt-8 h-full flex flex-col">
+                    <SidebarContent projects={projects} currentProject={currentProject} isProjectView={isProjectView} projectId={projectId} router={router} setCurrentProject={setCurrentProject} />
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function SidebarContent({ projects, currentProject, isProjectView, projectId, router, setCurrentProject }: {
+    projects: Project[];
+    currentProject: Project | null;
+    isProjectView: boolean | null | undefined;
+    projectId: string | null | undefined;
+    router: any;
+    setCurrentProject: (p: Project | null) => void;
+}) {
+    return (
+        <>
             {/* Project Switcher / Brand Header */}
             <div className="mb-8">
                 <DropdownMenu>
@@ -146,7 +224,7 @@ export function PlatformSidebar() {
                 </div>
                 <NavLink href="/" icon={<LogOut className="w-4 h-4" />}>Sign Out</NavLink>
             </div>
-        </aside>
+        </>
     );
 }
 

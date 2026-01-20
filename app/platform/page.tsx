@@ -24,6 +24,7 @@ import { Label } from '@/components/ui/label';
 import { api } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Project {
     id: string;
@@ -64,9 +65,9 @@ export default function ProjectsPage() {
             if (Array.isArray(data)) {
                 projectsList = data;
             } else if (data && Array.isArray(data.projects)) {
-                projectsList = data.projects;
+                projectsList = data?.projects;
             } else if (data && Array.isArray(data.data)) {
-                projectsList = data.data;
+                projectsList = data?.data;
             }
 
             setProjects(projectsList);
@@ -130,9 +131,29 @@ export default function ProjectsPage() {
 
     if (loading) {
         return (
-            <div className="h-full flex flex-col items-center justify-center p-8 text-gray-400">
-                <Loader2 className="w-8 h-8 animate-spin mb-4 text-purple-500" />
-                <p>Loading projects...</p>
+            <div className="p-8 max-w-7xl mx-auto min-h-full">
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+                    <div className="space-y-2">
+                        <Skeleton className="h-10 w-48 bg-white/10" />
+                        <Skeleton className="h-4 w-64 bg-white/10" />
+                    </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[1, 2, 3].map((i) => (
+                        <div key={i} className="space-y-4 rounded-xl border border-white/10 bg-black/40 p-6">
+                            <div className="flex items-center gap-4">
+                                <Skeleton className="h-10 w-10 rounded-lg bg-white/10" />
+                                <div className="space-y-2">
+                                    <Skeleton className="h-5 w-32 bg-white/10" />
+                                    <Skeleton className="h-3 w-20 bg-white/10" />
+                                </div>
+                            </div>
+                            <div className="space-y-2 pt-4">
+                                <Skeleton className="h-8 w-full bg-white/10" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
         );
     }

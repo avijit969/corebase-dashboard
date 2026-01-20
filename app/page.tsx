@@ -49,7 +49,7 @@ export default function LandingPage() {
               Manage everything from a unified, stunning dashboard.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/platform/signup">
+              <Link href="/platform">
                 <Button size="lg" className="h-12 px-8 text-lg bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 border-0 shadow-lg shadow-purple-500/25 text-white cursor-pointer">
                   Start Building Now <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>

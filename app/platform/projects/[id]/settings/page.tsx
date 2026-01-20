@@ -6,7 +6,9 @@ import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import { ProjectSettings } from '../_components/ProjectSettings';
 import { ProjectDetails } from '../types';
-import { Loader2 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+
+// ... (rest of imports)
 
 export default function ProjectSettingsPage() {
     const params = useParams();
@@ -44,10 +46,7 @@ export default function ProjectSettingsPage() {
     const handleDeleteProject = async () => {
         if (!project || !id) return;
 
-        if (!confirm(`Are you sure you want to delete ${project.meta.name}? This action cannot be undone.`)) {
-            return;
-        }
-
+        // Confirmation is now handled by the UI dialog
         try {
             const token = localStorage.getItem("platform_token");
             if (!token) return;
@@ -62,8 +61,9 @@ export default function ProjectSettingsPage() {
 
     if (loading) {
         return (
-            <div className="flex h-full items-center justify-center p-8">
-                <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+            <div className="space-y-6 p-4">
+                <Skeleton className="h-8 w-32 bg-white/10" />
+                <Skeleton className="h-48 w-full bg-white/10 rounded-lg" />
             </div>
         );
     }
@@ -73,7 +73,7 @@ export default function ProjectSettingsPage() {
     return (
         <div className="space-y-6 p-4">
             <h2 className="text-2xl font-bold text-white">Settings</h2>
-            <ProjectSettings handleDeleteProject={handleDeleteProject} />
+            <ProjectSettings projectName={project.meta.name} handleDeleteProject={handleDeleteProject} />
         </div>
     );
 }

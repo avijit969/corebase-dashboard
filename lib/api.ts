@@ -1,4 +1,4 @@
-export const API_BASE_URL = "http://localhost:3000/v1";
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export class ApiError extends Error {
     constructor(public message: string, public status: number, public code?: string) {
@@ -58,10 +58,7 @@ export const api = {
             });
             return handleResponse(res);
         },
-        // Assuming there might be a list endpoint, but if not we might fail here.
-        // Docs didn't explicitly list it but Step 14 output showed Get Project Details with ID.
-        // However, typically `GET /projects` lists them. I will try to implement it and if it fails handle gracefully.
-        list: async (token: string): Promise<any[]> => {
+        list: async (token: string): Promise<any> => {
             const res = await fetch(`${API_BASE_URL}/projects`, {
                 method: "GET",
                 headers: {
