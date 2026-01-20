@@ -1,4 +1,4 @@
-export const API_BASE_URL = "https://corebase.avijit.site/v1";
+export const API_BASE_URL = "http://localhost:3000/v1";
 
 export class ApiError extends Error {
     constructor(public message: string, public status: number, public code?: string) {
@@ -63,6 +63,33 @@ export const api = {
         // However, typically `GET /projects` lists them. I will try to implement it and if it fails handle gracefully.
         list: async (token: string): Promise<any[]> => {
             const res = await fetch(`${API_BASE_URL}/projects`, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            return handleResponse(res);
+        },
+        get: async (id: string, token: string): Promise<any> => {
+            const res = await fetch(`${API_BASE_URL}/projects/${id}`, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            return handleResponse(res);
+        },
+        delete: async (id: string, token: string): Promise<any> => {
+            const res = await fetch(`${API_BASE_URL}/projects/${id}`, {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            return handleResponse(res);
+        },
+        getUsers: async (id: string, token: string): Promise<any> => {
+            const res = await fetch(`${API_BASE_URL}/projects/${id}/users`, {
                 method: "GET",
                 headers: {
                     Authorization: `Bearer ${token}`,

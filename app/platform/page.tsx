@@ -42,6 +42,7 @@ export default function ProjectsPage() {
     const [newProjectName, setNewProjectName] = useState('');
     const [creating, setCreating] = useState(false);
     const [token, setToken] = useState<string | null>(null);
+    const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
 
     useEffect(() => {
         // Check auth
@@ -59,8 +60,6 @@ export default function ProjectsPage() {
         try {
             setLoading(true);
             const data = await api.projects.list(authToken);
-
-            // Handle various response structures
             let projectsList: Project[] = [];
             if (Array.isArray(data)) {
                 projectsList = data;
@@ -73,7 +72,6 @@ export default function ProjectsPage() {
             setProjects(projectsList);
         } catch (error) {
             console.error("Failed to fetch projects", error);
-            // We don't show toast error here to avoid annoyance if it's just empty or init issue
         } finally {
             setLoading(false);
         }
@@ -109,7 +107,23 @@ export default function ProjectsPage() {
         }
     };
 
-    const copyToClipboard = (text: string) => {
+    const handleDeleteProject = async () => {
+        if (!projectToDelete || !token) return;
+
+        try {
+            await api.projects.delete(projectToDelete.id, token);
+            setProjects(projects.filter(p => p.id !== projectToDelete.id));
+            setProjectToDelete(null);
+            toast.success("Project deleted successfully");
+        } catch (error: any) {
+            toast.error("Failed to delete project", {
+                description: error.message || "An error occurred."
+            });
+        }
+    };
+
+    const copyToClipboard = (text: string, e: React.MouseEvent) => {
+        e.stopPropagation();
         navigator.clipboard.writeText(text);
         toast.success("Copied to clipboard");
     };
@@ -185,7 +199,10 @@ export default function ProjectsPage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.1 }}
                     >
-                        <Card className="bg-black/40 border-white/10 text-white backdrop-blur-sm hover:border-purple-500/50 transition-colors group">
+                        <Card
+                            className="bg-black/40 border-white/10 text-white backdrop-blur-sm hover:border-purple-500/50 transition-colors group cursor-pointer relative"
+                            onClick={() => router.push(`/platform/projects/${project.id}`)}
+                        >
                             <CardHeader className="flex flex-row items-start justify-between pb-2">
                                 <div className="flex gap-3 items-center">
                                     <div className="w-10 h-10 rounded-lg bg-neutral-800 flex items-center justify-center border border-white/5">
@@ -196,16 +213,26 @@ export default function ProjectsPage() {
                                         <CardDescription className="text-xs text-gray-500 font-mono mt-1.5">{project.id}</CardDescription>
                                     </div>
                                 </div>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-white -mr-2">
-                                            <MoreVertical className="w-4 h-4" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="bg-neutral-900 border-white/10 text-white">
-                                        <DropdownMenuItem className="focus:bg-white/10 cursor-pointer text-red-400 focus:text-red-400">Delete Project</DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                <div onClick={(e) => e.stopPropagation()}>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-white -mr-2">
+                                                <MoreVertical className="w-4 h-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" className="bg-neutral-900 border-white/10 text-white">
+                                            <DropdownMenuItem
+                                                className="focus:bg-white/10 cursor-pointer text-red-400 focus:text-red-400"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setProjectToDelete(project);
+                                                }}
+                                            >
+                                                Delete Project
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-4 pt-4">
@@ -213,7 +240,12 @@ export default function ProjectsPage() {
                                         <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">API Key</Label>
                                         <div className="flex items-center gap-2 bg-black/50 p-2 rounded border border-white/5 group-hover:border-white/10 transition-colors">
                                             <code className="text-xs text-gray-300 flex-1 font-mono truncate">{project.api_key}</code>
-                                            <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-500 hover:text-white" onClick={() => copyToClipboard(project.api_key)}>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-6 w-6 text-gray-500 hover:text-white"
+                                                onClick={(e) => copyToClipboard(project.api_key, e)}
+                                            >
                                                 <Copy className="w-3 h-3" />
                                             </Button>
                                         </div>
@@ -258,6 +290,26 @@ export default function ProjectsPage() {
                     </motion.div>
                 )}
             </div>
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={!!projectToDelete} onOpenChange={(open) => !open && setProjectToDelete(null)}>
+                <DialogContent className="bg-neutral-900 border-white/10 text-white sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Delete Project</DialogTitle>
+                        <DialogDescription className="text-gray-400">
+                            Are you sure you want to delete <span className="text-white font-semibold">{projectToDelete?.name}</span>? This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button variant="ghost" onClick={() => setProjectToDelete(null)} className="text-gray-400 hover:text-white hover:bg-white/10">
+                            Cancel
+                        </Button>
+                        <Button onClick={handleDeleteProject} className="bg-red-600 hover:bg-red-700 text-white border-0">
+                            Delete Project
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

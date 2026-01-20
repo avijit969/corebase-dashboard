@@ -101,7 +101,7 @@ export default function LoginPage() {
                                 />
                             </div>
                         </CardContent>
-                        <CardFooter className="flex flex-col gap-4">
+                        <CardFooter className="flex flex-col gap-4 mt-4">
                             <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white" disabled={loading}>
                                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 Sign In
