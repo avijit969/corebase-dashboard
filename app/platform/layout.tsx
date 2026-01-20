@@ -17,8 +17,8 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
         return (
             <div className="min-h-screen bg-black text-white font-sans overflow-auto relative">
                 {/* Background Gradients for Auth Pages */}
-                <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
-                <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] translate-x-1/2 translate-y-1/2 pointer-events-none" />
+                <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-orange-600/20 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+                <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-red-600/20 rounded-full blur-[120px] translate-x-1/2 translate-y-1/2 pointer-events-none" />
                 {children}
             </div>
         );
@@ -37,7 +37,7 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
                         <Menu className="w-5 h-5" />
                     </Button>
                     <Link href="/" className="flex items-center gap-2 font-bold text-xl tracking-tighter">
-                        <div className="w-8 h-8 rounded-lg bg-linear-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-lg bg-linear-to-br from-orange-500 to-red-500 flex items-center justify-center">
                             <Layers className="w-5 h-5 text-white" />
                         </div>
                         CoreBase

@@ -18,7 +18,7 @@ export function ProjectOverview({ project, copyToClipboard }: ProjectOverviewPro
             <Card className="col-span-2 bg-neutral-900/50 border-white/10 text-white backdrop-blur-sm">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                        <TableIcon className="w-5 h-5 text-purple-400" />
+                        <TableIcon className="w-5 h-5 text-orange-400" />
                         Database Tables
                     </CardTitle>
                     <CardDescription className="text-gray-400">
@@ -29,10 +29,10 @@ export function ProjectOverview({ project, copyToClipboard }: ProjectOverviewPro
                     {project.tables && project.tables.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             {project.tables.map((table: any, i: number) => (
-                                <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 hover:border-purple-500/30 transition-colors group cursor-pointer" title="Click to view data (Not implemented yet)">
+                                <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 hover:border-orange-500/30 transition-colors group cursor-pointer" title="Click to view data (Not implemented yet)">
                                     <div className="flex items-center gap-3">
                                         <div className="w-8 h-8 rounded bg-neutral-800 flex items-center justify-center">
-                                            <TableIcon className="w-4 h-4 text-gray-400 group-hover:text-purple-400 transition-colors" />
+                                            <TableIcon className="w-4 h-4 text-gray-400 group-hover:text-orange-400 transition-colors" />
                                         </div>
                                         <span className="font-medium text-gray-200 group-hover:text-white">{table.name}</span>
                                     </div>

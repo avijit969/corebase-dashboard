@@ -52,7 +52,7 @@ export default function SignupPage() {
             >
                 <div className="flex justify-center mb-8">
                     <Link href="/" className="flex items-center gap-2 font-bold text-2xl tracking-tighter">
-                        <div className="w-10 h-10 rounded-xl bg-linear-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-xl bg-linear-to-br from-orange-500 to-red-500 flex items-center justify-center">
                             <Layers className="w-6 h-6 text-white" />
                         </div>
                         CoreBase
@@ -75,7 +75,7 @@ export default function SignupPage() {
                                     id="name"
                                     type="text"
                                     placeholder="John Doe"
-                                    className="bg-black/50 border-white/10 focus-visible:ring-purple-500 text-white"
+                                    className="bg-black/50 border-white/10 focus-visible:ring-orange-500 text-white"
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                     disabled={loading}
@@ -87,7 +87,7 @@ export default function SignupPage() {
                                     id="email"
                                     type="email"
                                     placeholder="name@example.com"
-                                    className="bg-black/50 border-white/10 focus-visible:ring-purple-500 text-white"
+                                    className="bg-black/50 border-white/10 focus-visible:ring-orange-500 text-white"
                                     value={formData.email}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                     required
@@ -99,7 +99,7 @@ export default function SignupPage() {
                                 <Input
                                     id="password"
                                     type="password"
-                                    className="bg-black/50 border-white/10 focus-visible:ring-purple-500 text-white"
+                                    className="bg-black/50 border-white/10 focus-visible:ring-orange-500 text-white"
                                     value={formData.password}
                                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                     required
@@ -108,13 +108,13 @@ export default function SignupPage() {
                             </div>
                         </CardContent>
                         <CardFooter className="flex flex-col gap-4 mt-4">
-                            <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white" disabled={loading}>
+                            <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white" disabled={loading}>
                                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 Sign Up
                             </Button>
                             <p className="text-center text-sm text-gray-400">
                                 Already have an account?{" "}
-                                <Link href="/platform/login" className="text-purple-400 hover:text-purple-300 underline underline-offset-4">
+                                <Link href="/platform/login" className="text-orange-400 hover:text-orange-300 underline underline-offset-4">
                                     Sign in
                                 </Link>
                             </p>

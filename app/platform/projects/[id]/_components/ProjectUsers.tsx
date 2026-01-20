@@ -15,7 +15,7 @@ export function ProjectUsers({ users }: ProjectUsersProps) {
         <Card className="bg-neutral-900/50 border-white/10 text-white backdrop-blur-sm animate-in fade-in duration-500">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                    <Users className="w-5 h-5 text-blue-400" />
+                    <Users className="w-5 h-5 text-orange-400" />
                     Project Users
                 </CardTitle>
                 <CardDescription className="text-gray-400">
@@ -40,7 +40,7 @@ export function ProjectUsers({ users }: ProjectUsersProps) {
                                     <TableRow key={user.id} className="border-white/10 hover:bg-white/5">
                                         <TableCell className="font-medium text-white">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-linear-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-xs font-bold">
+                                                <div className="w-8 h-8 rounded-full bg-linear-to-tr from-orange-500 to-red-500 flex items-center justify-center text-xs font-bold">
                                                     {user.name.charAt(0).toUpperCase()}
                                                 </div>
                                                 {user.name}
@@ -48,7 +48,7 @@ export function ProjectUsers({ users }: ProjectUsersProps) {
                                         </TableCell>
                                         <TableCell className="text-gray-300">{user.email}</TableCell>
                                         <TableCell>
-                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-500/10 text-orange-400 border border-orange-500/20">
                                                 {user.role}
                                             </span>
                                         </TableCell>

@@ -144,7 +144,7 @@ function SidebarContent({ projects, currentProject, isProjectView, projectId, ro
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="w-full justify-between px-2 h-12 hover:bg-white/5 border border-transparent hover:border-white/10">
                             <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-linear-to-br from-purple-500 to-blue-500 flex items-center justify-center shrink-0">
+                                <div className="w-8 h-8 rounded-lg bg-linear-to-br from-orange-500 to-red-500 flex items-center justify-center shrink-0">
                                     <Layers className="w-5 h-5 text-white" />
                                 </div>
                                 <div className="flex flex-col items-start overflow-hidden">
@@ -173,12 +173,12 @@ function SidebarContent({ projects, currentProject, isProjectView, projectId, ro
                                 router.push(`/platform/projects/${project.id}`);
                                 setCurrentProject(project);
                             }} className="focus:bg-white/10 cursor-pointer">
-                                <div className="w-2 h-2 rounded-full bg-purple-500 mr-2" />
+                                <div className="w-2 h-2 rounded-full bg-orange-500 mr-2" />
                                 {project.name}
                             </DropdownMenuItem>
                         ))}
                         <DropdownMenuSeparator className="bg-white/10" />
-                        <DropdownMenuItem onClick={() => router.push('/platform')} className="focus:bg-white/10 cursor-pointer text-purple-400 focus:text-purple-400">
+                        <DropdownMenuItem onClick={() => router.push('/platform')} className="focus:bg-white/10 cursor-pointer text-orange-400 focus:text-orange-400">
                             <Plus className="mr-2 h-4 w-4" />
                             Create Project
                         </DropdownMenuItem>

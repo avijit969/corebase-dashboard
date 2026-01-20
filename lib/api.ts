@@ -65,6 +65,7 @@ export const api = {
                     Authorization: `Bearer ${token}`,
                 },
             });
+            console.log(JSON.stringify(res, null, 2));
             return handleResponse(res);
         },
         get: async (id: string, token: string): Promise<any> => {
