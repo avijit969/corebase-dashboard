@@ -75,7 +75,9 @@ export const api = {
                     Authorization: `Bearer ${token}`,
                 },
             });
-            return handleResponse(res);
+            const data = await handleResponse(res);
+            console.log(`[API] GET /projects/${id} response:`, data);
+            return data;
         },
         delete: async (id: string, token: string): Promise<any> => {
             const res = await fetch(`${API_BASE_URL}/projects/${id}`, {
@@ -92,6 +94,81 @@ export const api = {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
+            });
+            return handleResponse(res);
+        }
+    },
+    db: {
+        listTables: async (apiKey: string): Promise<any> => {
+            const res = await fetch(`${API_BASE_URL}/db/tables`, {
+                method: "GET",
+                headers: { "x-api-key": apiKey },
+            });
+            return handleResponse(res);
+        },
+        createTable: async (apiKey: string, schema: any): Promise<any> => {
+            console.log(`[API] POST /db/tables request:`, schema, apiKey);
+            const res = await fetch(`${API_BASE_URL}/db/tables`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey
+                },
+                body: JSON.stringify(schema),
+            });
+            return handleResponse(res);
+        },
+        getTable: async (apiKey: string, tableName: string): Promise<any> => {
+            const res = await fetch(`${API_BASE_URL}/db/tables/${tableName}`, {
+                method: "GET",
+                headers: { "x-api-key": apiKey },
+            });
+            return handleResponse(res);
+        },
+        deleteTable: async (apiKey: string, tableName: string): Promise<any> => {
+            const res = await fetch(`${API_BASE_URL}/db/tables/${tableName}`, {
+                method: "DELETE",
+                headers: { "x-api-key": apiKey },
+            });
+            return handleResponse(res);
+        },
+        addColumn: async (apiKey: string, tableName: string, columnDef: any): Promise<any> => {
+            const res = await fetch(`${API_BASE_URL}/db/tables/${tableName}/columns`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey
+                },
+                body: JSON.stringify(columnDef),
+            });
+            return handleResponse(res);
+        },
+        updateColumn: async (apiKey: string, tableName: string, columnName: string, columnDef: any): Promise<any> => {
+            const res = await fetch(`${API_BASE_URL}/db/tables/${tableName}/columns/${columnName}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey
+                },
+                body: JSON.stringify(columnDef),
+            });
+            return handleResponse(res);
+        },
+        deleteColumn: async (apiKey: string, tableName: string, columnName: string): Promise<any> => {
+            const res = await fetch(`${API_BASE_URL}/db/tables/${tableName}/columns/${columnName}`, {
+                method: "DELETE",
+                headers: { "x-api-key": apiKey },
+            });
+            return handleResponse(res);
+        },
+        addForeignKey: async (apiKey: string, tableName: string, fkDef: any): Promise<any> => {
+            const res = await fetch(`${API_BASE_URL}/db/tables/${tableName}/foreign-keys`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey
+                },
+                body: JSON.stringify(fkDef),
             });
             return handleResponse(res);
         }

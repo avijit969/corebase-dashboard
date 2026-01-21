@@ -63,7 +63,11 @@ export default function ProjectOverviewPage() {
     return (
         <div className="space-y-6 p-4">
             <h2 className="text-2xl font-bold text-white">Database Overview</h2>
-            <ProjectOverview project={project} copyToClipboard={copyToClipboard} />
+            <ProjectOverview
+                project={project}
+                copyToClipboard={copyToClipboard}
+                refreshProject={() => fetchProject(id, localStorage.getItem("platform_token") || "")}
+            />
         </div>
     );
 }

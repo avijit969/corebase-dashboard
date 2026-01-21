@@ -136,6 +136,7 @@ function SidebarContent({ projects, currentProject, isProjectView, projectId, ro
     router: any;
     setCurrentProject: (p: Project | null) => void;
 }) {
+    const pathname = usePathname();
     return (
         <>
             {/* Project Switcher / Brand Header */}
@@ -202,7 +203,11 @@ function SidebarContent({ projects, currentProject, isProjectView, projectId, ro
 
                         {isProjectView && projectId && (
                             <>
-                                <NavLink href={`/platform/projects/${projectId}`} exact icon={<Database className="w-4 h-4" />}>Database</NavLink>
+                                <NavLink
+                                    href={`/platform/projects/${projectId}`}
+                                    active={pathname === `/platform/projects/${projectId}` || pathname?.includes(`/platform/projects/${projectId}/tables/`)}
+                                    icon={<Database className="w-4 h-4" />}
+                                >Database</NavLink>
                                 <NavLink href={`/platform/projects/${projectId}/users`} icon={<Users className="w-4 h-4" />}>Users</NavLink>
                                 <NavLink href={`/platform/projects/${projectId}/settings`} icon={<Settings className="w-4 h-4" />}>Settings</NavLink>
                             </>
@@ -228,9 +233,9 @@ function SidebarContent({ projects, currentProject, isProjectView, projectId, ro
     );
 }
 
-function NavLink({ href, icon, children, exact = false }: { href: string; icon: React.ReactNode; children: React.ReactNode; exact?: boolean }) {
+function NavLink({ href, icon, children, exact = false, active }: { href: string; icon: React.ReactNode; children: React.ReactNode; exact?: boolean; active?: boolean }) {
     const pathname = usePathname();
-    const isActive = exact ? pathname === href : pathname?.startsWith(href);
+    const isActive = active !== undefined ? active : (exact ? pathname === href : pathname?.startsWith(href));
 
     return (
         <Link href={href}>

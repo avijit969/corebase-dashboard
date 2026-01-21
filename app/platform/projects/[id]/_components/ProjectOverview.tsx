@@ -1,15 +1,18 @@
 import React from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Copy, Calendar, Table as TableIcon } from 'lucide-react';
 import { ProjectDetails } from '../types';
+import { CreateTableDialog } from './CreateTableDialog';
 
 interface ProjectOverviewProps {
     project: ProjectDetails;
     copyToClipboard: (text: string) => void;
+    refreshProject: () => void;
 }
 
-export function ProjectOverview({ project, copyToClipboard }: ProjectOverviewProps) {
+export function ProjectOverview({ project, copyToClipboard, refreshProject }: ProjectOverviewProps) {
     const createdDate = project.meta.created_at ? new Date(project.meta.created_at).toLocaleDateString() : 'N/A';
 
     return (
@@ -17,27 +20,39 @@ export function ProjectOverview({ project, copyToClipboard }: ProjectOverviewPro
             {/* Tables Card */}
             <Card className="col-span-2 bg-neutral-900/50 border-white/10 text-white backdrop-blur-sm">
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <TableIcon className="w-5 h-5 text-orange-400" />
-                        Database Tables
-                    </CardTitle>
-                    <CardDescription className="text-gray-400">
-                        Manage your project's data schema and content.
-                    </CardDescription>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <CardTitle className="flex items-center gap-2">
+                                <TableIcon className="w-5 h-5 text-orange-400" />
+                                Database Tables
+                            </CardTitle>
+                            <CardDescription className="text-gray-400 mt-1">
+                                Manage your project's data schema and content.
+                            </CardDescription>
+                        </div>
+                        <CreateTableDialog project={project} onTableCreated={refreshProject}>
+                            <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white border-0">
+                                <TableIcon className="w-4 h-4 mr-2" />
+                                Create Table
+                            </Button>
+                        </CreateTableDialog>
+                    </div>
                 </CardHeader>
                 <CardContent>
                     {project.tables && project.tables.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             {project.tables.map((table: any, i: number) => (
-                                <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 hover:border-orange-500/30 transition-colors group cursor-pointer" title="Click to view data (Not implemented yet)">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded bg-neutral-800 flex items-center justify-center">
-                                            <TableIcon className="w-4 h-4 text-gray-400 group-hover:text-orange-400 transition-colors" />
+                                <Link key={i} href={`/platform/projects/${project.id}/tables/${table.name}`}>
+                                    <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 hover:border-orange-500/30 transition-colors group cursor-pointer">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded bg-neutral-800 flex items-center justify-center">
+                                                <TableIcon className="w-4 h-4 text-gray-400 group-hover:text-orange-400 transition-colors" />
+                                            </div>
+                                            <span className="font-medium text-gray-200 group-hover:text-white">{table.name}</span>
                                         </div>
-                                        <span className="font-medium text-gray-200 group-hover:text-white">{table.name}</span>
+                                        <span className="text-xs text-gray-500">View Schema →</span>
                                     </div>
-                                    <span className="text-xs text-gray-500">0 rows</span>
-                                </div>
+                                </Link>
                             ))}
                         </div>
                     ) : (
