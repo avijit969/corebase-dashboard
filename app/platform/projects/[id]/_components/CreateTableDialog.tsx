@@ -5,10 +5,12 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { ProjectDetails } from '../types';
+import { useProjectStore } from '@/lib/stores/project-store';
 
 interface CreateTableDialogProps {
     project: ProjectDetails;
@@ -31,7 +33,7 @@ export function CreateTableDialog({ project, onTableCreated, children }: CreateT
     const [columns, setColumns] = useState<ColumnDef[]>([
         { name: 'id', type: 'integer', primary: true, notNull: true, defaultValue: '' }
     ]);
-
+    const { currentApiKey } = useProjectStore()
     const addColumn = () => {
         setColumns([...columns, { name: '', type: 'text', primary: false, notNull: false, defaultValue: '' }]);
     };
@@ -62,7 +64,7 @@ export function CreateTableDialog({ project, onTableCreated, children }: CreateT
 
         try {
             setLoading(true);
-            const apiKey = project.api_key || project.apiKey || project.meta?.api_key || project.meta?.apiKey;
+            const apiKey = currentApiKey;
 
             if (!apiKey) {
                 console.error("Project object missing API Key:", project);
@@ -148,18 +150,22 @@ export function CreateTableDialog({ project, onTableCreated, children }: CreateT
                                             />
                                         </div>
                                         <div className="col-span-3">
-                                            <select
+                                            <Select
                                                 value={column.type}
-                                                onChange={(e) => updateColumn(index, 'type', e.target.value)}
-                                                className="flex h-8 w-full rounded-md border border-white/10 bg-black/50 px-2 py-1 text-xs text-white focus:outline-hidden"
+                                                onValueChange={(value) => updateColumn(index, 'type', value)}
                                             >
-                                                <option value="text">Text</option>
-                                                <option value="integer">Integer</option>
-                                                <option value="boolean">Boolean</option>
-                                                <option value="datetime">DateTime</option>
-                                                <option value="json">JSON</option>
-                                                <option value="float">Float</option>
-                                            </select>
+                                                <SelectTrigger className="h-8 w-full bg-black/50 border-white/10 text-xs text-white">
+                                                    <SelectValue placeholder="Type" />
+                                                </SelectTrigger>
+                                                <SelectContent className="bg-neutral-900 border-white/10 text-gray-300">
+                                                    <SelectItem value="text">Text</SelectItem>
+                                                    <SelectItem value="integer">Integer</SelectItem>
+                                                    <SelectItem value="boolean">Boolean</SelectItem>
+                                                    <SelectItem value="datetime">DateTime</SelectItem>
+                                                    <SelectItem value="json">JSON</SelectItem>
+                                                    <SelectItem value="float">Float</SelectItem>
+                                                </SelectContent>
+                                            </Select>
                                         </div>
                                         <div className="col-span-4">
                                             <Input

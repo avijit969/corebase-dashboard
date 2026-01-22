@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
 
@@ -83,18 +84,19 @@ export function AddColumnDialog({ apiKey, tableName, onColumnAdded, children }: 
 
                     <div className="space-y-2">
                         <Label>Type</Label>
-                        <select
-                            value={type}
-                            onChange={(e) => setType(e.target.value)}
-                            className="flex h-10 w-full rounded-md border border-white/10 bg-black/50 px-3 py-2 text-sm text-white focus:outline-hidden"
-                        >
-                            <option value="text">Text</option>
-                            <option value="integer">Integer</option>
-                            <option value="boolean">Boolean</option>
-                            <option value="datetime">DateTime</option>
-                            <option value="json">JSON</option>
-                            <option value="float">Float</option>
-                        </select>
+                        <Select value={type} onValueChange={setType}>
+                            <SelectTrigger className="h-10 w-full bg-black/50 border-white/10 text-white">
+                                <SelectValue placeholder="Select type" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-neutral-900 border-white/10 text-gray-300">
+                                <SelectItem value="text">Text</SelectItem>
+                                <SelectItem value="integer">Integer</SelectItem>
+                                <SelectItem value="boolean">Boolean</SelectItem>
+                                <SelectItem value="datetime">DateTime</SelectItem>
+                                <SelectItem value="json">JSON</SelectItem>
+                                <SelectItem value="float">Float</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
 
                     <div className="space-y-2">

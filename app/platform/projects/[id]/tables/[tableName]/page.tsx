@@ -23,10 +23,10 @@ export default function TableDetailsPage() {
     const projectId = params?.id as string;
     const tableName = params?.tableName as string;
 
-    const { currentProject, currentApiKey } = useProjectStore();
+    const currentApiKey = useProjectStore(state => state.currentApiKey);
     const [schema, setSchema] = useState<TableSchema | null>(null);
     const [loading, setLoading] = useState(true);
-    console.log("api key is", currentApiKey)
+
     // Rename Column State
     const [renameDialogOpen, setRenameDialogOpen] = useState(false);
     const [columnToRename, setColumnToRename] = useState<string | null>(null);
@@ -40,28 +40,27 @@ export default function TableDetailsPage() {
         }
 
         if (projectId && tableName) {
-            // If we have the key in store, use it immediately for faster load? 
-            // But we still need to fetch table schema.
             fetchTableSchema(projectId, tableName, token);
         }
-    }, [projectId, tableName, router, currentApiKey]); // Re-run if apiKey changes (e.g. loaded by layout)
+    }, [projectId, tableName, router, currentApiKey]);
 
     const fetchTableSchema = async (pid: string, tName: string, token: string) => {
         try {
             setLoading(true);
-
-            // Resolve API Key: Store > Fetch Project
-            let apiKey = currentApiKey;
-
+            let apiKey = useProjectStore.getState().currentApiKey;
+            console.log("api key is", apiKey)
             if (!apiKey) {
-                // Try fetching project if store is empty (e.g. direct nav)
                 const projData = await api.projects.get(pid, token);
                 if (projData) {
                     apiKey = projData.api_key || projData.apiKey || projData.meta?.api_key || projData.meta?.apiKey;
+                    if (apiKey) {
+                        useProjectStore.setState({ currentApiKey: apiKey });
+                    }
                 }
             }
 
             if (apiKey) {
+
                 const tableData = await api.db.getTable(apiKey, tName);
                 if (tableData && tableData.table) {
                     setSchema(tableData);
@@ -70,7 +69,6 @@ export default function TableDetailsPage() {
                 }
             } else {
                 console.error("API Key missing");
-                // Don't toast error immediately if still loading from layout
             }
         } catch (error: any) {
             console.error("Failed to fetch table details", error);

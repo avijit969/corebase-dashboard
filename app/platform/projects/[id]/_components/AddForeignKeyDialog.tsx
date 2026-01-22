@@ -1,12 +1,27 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
-import { api } from '@/lib/api';
+import React, { useEffect, useState } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { toast } from "sonner";
+import { api } from "@/lib/api";
 
 interface AddForeignKeyDialogProps {
     apiKey: string;
@@ -16,15 +31,64 @@ interface AddForeignKeyDialogProps {
     children?: React.ReactNode;
 }
 
-export function AddForeignKeyDialog({ apiKey, tableName, existingColumns, onSuccess, children }: AddForeignKeyDialogProps) {
+export function AddForeignKeyDialog({
+    apiKey,
+    tableName,
+    existingColumns,
+    onSuccess,
+    children,
+}: AddForeignKeyDialogProps) {
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    // FK State
-    const [column, setColumn] = useState(existingColumns[0] || '');
-    const [refTable, setRefTable] = useState('');
-    const [refColumn, setRefColumn] = useState('id');
-    const [onDelete, setOnDelete] = useState('cascade');
+    const [column, setColumn] = useState(existingColumns[0] || "");
+    const [refTable, setRefTable] = useState("");
+    const [refColumn, setRefColumn] = useState("id");
+    const [onDelete, setOnDelete] = useState("cascade");
+
+    const [refTables, setRefTables] = useState<string[]>([]);
+    const [refColumns, setRefColumns] = useState<string[]>([]);
+
+    /** Fetch all tables */
+    useEffect(() => {
+        const fetchTables = async () => {
+            try {
+                const res = await api.db.listTables(apiKey);
+
+                if (!Array.isArray(res?.tables)) {
+                    console.error("Invalid tables response", res);
+                    return;
+                }
+
+                setRefTables(
+                    res.tables
+                        .map((t: any) => t.name)
+                        .filter((name: string) => name !== tableName)
+                );
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        fetchTables();
+    }, [apiKey, tableName]);
+
+    /** Fetch columns when refTable changes */
+    useEffect(() => {
+        if (!refTable) return;
+
+        const fetchColumns = async () => {
+            try {
+                const table = await api.db.getTable(apiKey, refTable);
+                setRefColumns(table.columns.map((c: any) => c.name));
+                setRefColumn("id");
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        fetchColumns();
+    }, [apiKey, refTable]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -36,26 +100,24 @@ export function AddForeignKeyDialog({ apiKey, tableName, existingColumns, onSucc
 
         try {
             setLoading(true);
-            const fkDef = {
+
+            await api.db.addForeignKey(apiKey, tableName, {
                 column,
                 references: {
                     table: refTable,
                     column: refColumn,
-                    onDelete
-                }
-            };
+                    onDelete,
+                },
+            });
 
-            await api.db.addForeignKey(apiKey, tableName, fkDef);
-            toast.success(`Foreign key added to '${tableName}'`);
+            toast.success("Foreign key added successfully");
             setOpen(false);
             onSuccess();
 
-            // Reset
-            setRefTable('');
-            setRefColumn('id');
-        } catch (error: any) {
-            console.error(error);
-            toast.error(error.message || "Failed to add foreign key");
+            setRefTable("");
+            setRefColumn("id");
+        } catch (err: any) {
+            toast.error(err.message || "Failed to add foreign key");
         } finally {
             setLoading(false);
         }
@@ -63,68 +125,89 @@ export function AddForeignKeyDialog({ apiKey, tableName, existingColumns, onSucc
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                {children}
-            </DialogTrigger>
+            <DialogTrigger asChild>{children}</DialogTrigger>
+
             <DialogContent className="bg-neutral-900 border-white/10 text-white max-w-md">
                 <DialogHeader>
                     <DialogTitle>Add Foreign Key</DialogTitle>
                     <DialogDescription>
-                        Link a column in <strong>{tableName}</strong> to another table.
+                        Link a column in <strong>{tableName}</strong> to another table
                     </DialogDescription>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="space-y-4 mt-2">
-                    <div className="space-y-2">
-                        <Label>Column in {tableName}</Label>
-                        <select
-                            value={column}
-                            onChange={(e) => setColumn(e.target.value)}
-                            className="flex h-10 w-full rounded-md border border-white/10 bg-black/50 px-3 py-2 text-sm text-white focus:outline-hidden"
-                        >
-                            {existingColumns.map(c => (
-                                <option key={c} value={c}>{c}</option>
-                            ))}
-                        </select>
+                <form onSubmit={handleSubmit} className="space-y-4 w-full">
+                    {/* Column */}
+                    <div className="w-full">
+                        <Label>Column</Label>
+                        <Select value={column} onValueChange={setColumn}>
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {existingColumns.map((c) => (
+                                    <SelectItem key={c} value={c}>
+                                        {c}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
 
-                    <div className="space-y-2">
+                    {/* Ref Table */}
+                    <div className="w-full">
                         <Label>Referenced Table</Label>
-                        <Input
-                            value={refTable}
-                            onChange={(e) => setRefTable(e.target.value)}
-                            placeholder="e.g., users"
-                            className="bg-black/50 border-white/10 text-white"
-                        />
+                        <Select value={refTable} onValueChange={setRefTable}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select table" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {refTables.map((t) => (
+                                    <SelectItem key={t} value={t}>
+                                        {t}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
 
-                    <div className="space-y-2">
+                    {/* Ref Column */}
+                    <div>
                         <Label>Referenced Column</Label>
-                        <Input
-                            value={refColumn}
-                            onChange={(e) => setRefColumn(e.target.value)}
-                            placeholder="e.g., id"
-                            className="bg-black/50 border-white/10 text-white"
-                        />
+                        <Select value={refColumn} onValueChange={setRefColumn}>
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {refColumns.map((c) => (
+                                    <SelectItem key={c} value={c}>
+                                        {c}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
 
-                    <div className="space-y-2">
+                    {/* On Delete */}
+                    <div>
                         <Label>On Delete</Label>
-                        <select
-                            value={onDelete}
-                            onChange={(e) => setOnDelete(e.target.value)}
-                            className="flex h-10 w-full rounded-md border border-white/10 bg-black/50 px-3 py-2 text-sm text-white focus:outline-hidden"
-                        >
-                            <option value="cascade">Cascade</option>
-                            <option value="set null">Set Null</option>
-                            <option value="restrict">Restrict</option>
-                            <option value="no action">No Action</option>
-                        </select>
+                        <Select value={onDelete} onValueChange={setOnDelete}>
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="cascade">Cascade</SelectItem>
+                                <SelectItem value="set null">Set Null</SelectItem>
+                                <SelectItem value="restrict">Restrict</SelectItem>
+                                <SelectItem value="no action">No Action</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
 
                     <DialogFooter>
-                        <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-                        <Button type="submit" disabled={loading} className="bg-orange-600 hover:bg-orange-700 text-white">
+                        <Button variant="ghost" onClick={() => setOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button type="submit" disabled={loading}>
                             {loading ? "Adding..." : "Add Relation"}
                         </Button>
                     </DialogFooter>

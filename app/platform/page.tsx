@@ -25,6 +25,7 @@ import { api } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useProjectStore } from '@/lib/stores/project-store';
 
 interface Project {
     id: string;
@@ -44,7 +45,7 @@ export default function ProjectsPage() {
     const [creating, setCreating] = useState(false);
     const [token, setToken] = useState<string | null>(null);
     const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
-
+    const { setApiKey } = useProjectStore()
     useEffect(() => {
         // Check auth
         const storedToken = localStorage.getItem("platform_token");
@@ -222,7 +223,11 @@ export default function ProjectsPage() {
                     >
                         <Card
                             className="bg-black/40 border-white/10 text-white backdrop-blur-sm hover:border-purple-500/50 transition-colors group cursor-pointer relative"
-                            onClick={() => router.push(`/platform/projects/${project.id}`)}
+                            onClick={() => {
+                                router.push(`/platform/projects/${project.id}`)
+                                // set project api key in store
+                                setApiKey(project.api_key)
+                            }}
                         >
                             <CardHeader className="flex flex-row items-start justify-between pb-2">
                                 <div className="flex gap-3 items-center">
