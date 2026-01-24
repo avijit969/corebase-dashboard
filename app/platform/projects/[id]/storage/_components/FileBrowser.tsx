@@ -23,13 +23,14 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils'; // Assuming this exists, typical shadcn
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerClose } from '@/components/ui/drawer';
 
 interface StorageFile {
     id: string;
     key: string;
     bucket: string;
     filename: string;
-    contentType: string;
+    mime_type: string;
     size: number;
     url?: string;
     created_at: string;
@@ -38,7 +39,7 @@ interface StorageFile {
 interface FileBrowserProps {
     apiKey: string;
     bucketName: string | null;
-    onRefreshNeeded: () => void; // Call parent to refresh usage stats if any
+    onRefreshNeeded: () => void;
 }
 
 export function FileBrowser({ apiKey, bucketName, onRefreshNeeded }: FileBrowserProps) {
@@ -46,14 +47,14 @@ export function FileBrowser({ apiKey, bucketName, onRefreshNeeded }: FileBrowser
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [dragActive, setDragActive] = useState(false);
-    const [dragCounter, setDragCounter] = useState(0);
-
+    const [selectedFile, setSelectedFile] = useState<StorageFile | null>(null);
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const fetchFiles = useCallback(async () => {
         if (!bucketName || !apiKey) return;
         try {
             setLoading(true);
             const res = await api.storage.listFiles(apiKey, bucketName);
-            console.log(JSON.stringify(res, null, 2));
+            console.log(res);
             const fileList = Array.isArray(res) ? res : (res.files || []);
 
             setFiles(fileList);
@@ -64,6 +65,7 @@ export function FileBrowser({ apiKey, bucketName, onRefreshNeeded }: FileBrowser
             setLoading(false);
         }
     }, [apiKey, bucketName]);
+
 
     useEffect(() => {
         if (bucketName) {
@@ -124,8 +126,7 @@ export function FileBrowser({ apiKey, bucketName, onRefreshNeeded }: FileBrowser
                 const uploadRes = await fetch(signRes.uploadUrl, {
                     method: 'PUT',
                     headers: { 'Content-Type': file.type || 'application/octet-stream' },
-                    body: file,
-                    mode: "cors"
+                    body: file
                 });
 
                 if (!uploadRes.ok) {
@@ -161,9 +162,9 @@ export function FileBrowser({ apiKey, bucketName, onRefreshNeeded }: FileBrowser
         }
     };
 
-    const copyUrl = (key: string) => {
-        navigator.clipboard.writeText(key);
-        toast.success("File key copied to clipboard");
+    const copyUrl = (url: string) => {
+        navigator.clipboard.writeText(url);
+        toast.success("File URL copied to clipboard");
     };
 
     const FileIcon = ({ type }: { type: string }) => {
@@ -243,13 +244,14 @@ export function FileBrowser({ apiKey, bucketName, onRefreshNeeded }: FileBrowser
             ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 overflow-y-auto pb-20">
                     {files.map((file) => (
-                        <div key={file.id} className="group relative bg-neutral-900 border border-white/5 hover:border-orange-500/50 rounded-xl p-4 transition-all duration-200 hover:shadow-lg hover:shadow-orange-900/10 flex flex-col gap-3">
+                        <div key={file.id} className="group relative bg-neutral-900 border border-white/5 hover:border-orange-500/50 rounded-xl p-4 transition-all duration-200 hover:shadow-lg hover:shadow-orange-900/10 flex flex-col gap-3"
+                            onClick={() => {
+                                setIsDrawerOpen(true);
+                                setSelectedFile(file)
+                            }}
+                        >
                             <div className="aspect-square rounded-lg bg-black/40 flex items-center justify-center overflow-hidden relative">
-                                {file.contentType?.startsWith('image/') && file.url ? (
-                                    <img src={file.url} alt={file.filename} className="w-full h-full object-cover" />
-                                ) : (
-                                    <FileIcon type={file.contentType || 'application/octet-stream'} />
-                                )}
+                                <FileIcon type={file.mime_type || 'application/octet-stream'} />
                             </div>
 
                             <div className="flex items-start justify-between gap-2">
@@ -285,6 +287,29 @@ export function FileBrowser({ apiKey, bucketName, onRefreshNeeded }: FileBrowser
                     ))}
                 </div>
             )}
+            <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen} direction="right" modal>
+                <DrawerContent className="max-w-md mx-auto">
+                    <DrawerHeader className="border-b border-neutral-800 pb-4">
+                        <DrawerTitle>{selectedFile?.filename}</DrawerTitle>
+                        <DrawerDescription className="flex flex-col gap-2">
+                            <span>Size: {selectedFile ? (selectedFile.size / 1024).toFixed(1) : ''} KB</span>
+                            <span>Type: {selectedFile?.mime_type}</span>
+                            <span>Created: {selectedFile?.created_at ? new Date(selectedFile.created_at).toLocaleString() : ''}</span>
+                            {selectedFile?.url && (
+                                <img src={selectedFile.url} alt={selectedFile.filename} className="w-full h-auto rounded mt-2" />
+                            )}
+                            {selectedFile?.url && (
+                                <Button variant="outline" size="sm" onClick={() => copyUrl(selectedFile.url!)} className="mt-2">
+                                    Copy URL
+                                </Button>
+                            )}
+                        </DrawerDescription>
+                    </DrawerHeader>
+                    <DrawerClose asChild>
+                        <Button variant="ghost" className="absolute top-2 right-2">Close</Button>
+                    </DrawerClose>
+                </DrawerContent>
+            </Drawer>
         </div>
     );
 }
