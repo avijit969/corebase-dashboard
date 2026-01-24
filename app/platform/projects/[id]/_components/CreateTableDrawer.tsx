@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
     Select,
     SelectContent,
@@ -247,146 +246,171 @@ export function CreateTableDrawer({
                         </DrawerDescription>
                     </DrawerHeader>
 
-                    <form
-                        id="create-table-form"
-                        onSubmit={handleSubmit}
-                        className="flex-1 overflow-y-auto px-4 space-y-6"
-                    >
-                        <Input
-                            value={tableName}
-                            onChange={(e) => setTableName(e.target.value)}
-                            placeholder="table_name"
-                            className="bg-black/50"
-                        />
-
-                        {columns.map((c, i) => (
-                            <div
-                                key={i}
-                                className="p-4 rounded-lg border border-white/10 space-y-3"
-                            >
-                                <div className="grid grid-cols-12 gap-3">
+                    <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
+                        <form id="create-table-form" onSubmit={handleSubmit} className="space-y-6">
+                            <div className="space-y-4">
+                                <h3 className="text-sm font-medium text-neutral-400 uppercase tracking-wider">General</h3>
+                                <div className="bg-neutral-900 border border-white/10 rounded-lg p-1">
                                     <Input
-                                        className="col-span-4"
-                                        placeholder="column"
-                                        value={c.name}
-                                        onChange={(e) =>
-                                            updateColumn(i, "name", e.target.value)
-                                        }
+                                        value={tableName}
+                                        onChange={(e) => setTableName(e.target.value)}
+                                        placeholder="Table Name (e.g. users)"
+                                        className="bg-transparent border-0 text-lg h-12 focus-visible:ring-0 placeholder:text-neutral-600"
+                                        autoFocus
                                     />
+                                </div>
+                            </div>
 
-                                    <Select
-                                        value={c.type}
-                                        onValueChange={(v) => updateColumn(i, "type", v)}
-                                    >
-                                        <SelectTrigger className="col-span-3">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {[
-                                                "text",
-                                                "integer",
-                                                "boolean",
-                                                "float",
-                                                "uuid",
-                                                "json",
-                                                "datetime",
-                                            ].map((t) => (
-                                                <SelectItem key={t} value={t}>
-                                                    {t}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-
-                                    <Input
-                                        className="col-span-4"
-                                        placeholder="default"
-                                        value={c.defaultValue}
-                                        onChange={(e) =>
-                                            updateColumn(i, "defaultValue", e.target.value)
-                                        }
-                                    />
-
-                                    {columns.length > 1 && (
-                                        <Button
-                                            size="icon"
-                                            variant="ghost"
-                                            onClick={() => removeColumn(i)}
-                                        >
-                                            <Trash2 />
-                                        </Button>
-                                    )}
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-sm font-medium text-neutral-400 uppercase tracking-wider">Columns</h3>
+                                    <Button type="button" onClick={addColumn} variant="ghost" size="sm" className="text-orange-500 hover:text-orange-400 hover:bg-orange-500/10 h-8">
+                                        <Plus className="w-3.5 h-3.5 mr-1.5" /> Add Column
+                                    </Button>
                                 </div>
 
-                                <label className="flex items-center gap-2 text-sm">
-                                    <input
-                                        type="checkbox"
-                                        checked={c.isForeignKey}
-                                        onChange={(e) =>
-                                            updateColumn(i, "isForeignKey", e.target.checked)
-                                        }
-                                    />
-                                    <LinkIcon className="w-3 h-3" /> Foreign Key
-                                </label>
-
-                                {c.isForeignKey && (
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <Select
-                                            value={c.fkTargetTable}
-                                            onValueChange={(v) =>
-                                                handleTargetTableChange(i, v)
-                                            }
+                                <div className="space-y-3">
+                                    {columns.map((c, i) => (
+                                        <div
+                                            key={i}
+                                            className="p-3 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-colors space-y-3 group"
                                         >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Table" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {refTables.map((t) => (
-                                                    <SelectItem key={t} value={t}>
-                                                        {t}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
+                                            <div className="flex items-start gap-3">
+                                                <div className="grid grid-cols-12 gap-3 flex-1">
+                                                    <div className="col-span-5">
+                                                        <Input
+                                                            placeholder="Column Name"
+                                                            value={c.name}
+                                                            onChange={(e) => updateColumn(i, "name", e.target.value)}
+                                                            className="bg-black/20 border-white/5 h-9 focus-visible:ring-1 focus-visible:ring-orange-500/50"
+                                                        />
+                                                    </div>
 
-                                        <Select
-                                            value={c.fkTargetColumn}
-                                            disabled={
-                                                !c.fkTargetTable ||
-                                                fetchingTable === c.fkTargetTable
-                                            }
-                                            onValueChange={(v) =>
-                                                updateColumn(i, "fkTargetColumn", v)
-                                            }
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue
-                                                    placeholder={
-                                                        fetchingTable === c.fkTargetTable
-                                                            ? "Loading..."
-                                                            : "Column"
-                                                    }
-                                                />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {availableColumns[c.fkTargetTable!]?.map(
-                                                    (col) => (
-                                                        <SelectItem key={col} value={col}>
-                                                            {col}
-                                                        </SelectItem>
-                                                    )
+                                                    <div className="col-span-3">
+                                                        <Select
+                                                            value={c.type}
+                                                            onValueChange={(v) => updateColumn(i, "type", v)}
+                                                        >
+                                                            <SelectTrigger className="bg-black/20 border-white/5 h-9 text-neutral-300">
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent className="bg-neutral-800 border-white/10">
+                                                                {[
+                                                                    "text",
+                                                                    "integer",
+                                                                    "boolean",
+                                                                    "float",
+                                                                    "uuid",
+                                                                    "json",
+                                                                    "datetime",
+                                                                ].map((t) => (
+                                                                    <SelectItem key={t} value={t} className="text-neutral-300 focus:bg-white/10 focus:text-white">
+                                                                        {t}
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+
+                                                    <div className="col-span-4">
+                                                        <Input
+                                                            placeholder="Default Value (Optional)"
+                                                            value={c.defaultValue}
+                                                            onChange={(e) => updateColumn(i, "defaultValue", e.target.value)}
+                                                            className="bg-black/20 border-white/5 h-9 text-neutral-400 focus:text-white"
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                {columns.length > 1 && (
+                                                    <Button
+                                                        size="icon"
+                                                        variant="ghost"
+                                                        onClick={() => removeColumn(i)}
+                                                        className="h-9 w-9 text-neutral-600 hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </Button>
                                                 )}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
+                                            </div>
 
-                        <Button type="button" onClick={addColumn} variant="outline">
-                            <Plus className="w-4 h-4 mr-2" /> Add Column
-                        </Button>
-                    </form>
+                                            <div className="flex items-center gap-6 px-1 pt-1">
+                                                <div className="flex items-center gap-4 border-r border-white/5 pr-4">
+                                                    <label className="flex items-center gap-2 text-xs font-medium text-neutral-400 cursor-pointer hover:text-white transition-colors select-none">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={c.primary}
+                                                            onChange={(e) => updateColumn(i, "primary", e.target.checked)}
+                                                            className="rounded border-white/20 bg-white/5 text-orange-500 focus:ring-0 focus:ring-offset-0 w-3.5 h-3.5"
+                                                        />
+                                                        Primary Key
+                                                    </label>
+                                                    <label className="flex items-center gap-2 text-xs font-medium text-neutral-400 cursor-pointer hover:text-white transition-colors select-none">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={c.notNull}
+                                                            onChange={(e) => updateColumn(i, "notNull", e.target.checked)}
+                                                            className="rounded border-white/20 bg-white/5 text-orange-500 focus:ring-0 focus:ring-offset-0 w-3.5 h-3.5"
+                                                        />
+                                                        Not Null
+                                                    </label>
+                                                </div>
+
+                                                <label className="flex items-center gap-2 text-xs font-medium text-neutral-400 cursor-pointer hover:text-white transition-colors select-none">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={c.isForeignKey}
+                                                        onChange={(e) => updateColumn(i, "isForeignKey", e.target.checked)}
+                                                        className="rounded border-white/20 bg-white/5 text-orange-500 focus:ring-0 focus:ring-offset-0 w-3.5 h-3.5"
+                                                    />
+                                                    <LinkIcon className="w-3 h-3" /> Foreign Key
+                                                </label>
+                                            </div>
+
+                                            {c.isForeignKey && (
+                                                <div className="grid grid-cols-2 gap-3 pt-2 animate-in slide-in-from-top-1">
+                                                    <Select
+                                                        value={c.fkTargetTable}
+                                                        onValueChange={(v) => handleTargetTableChange(i, v)}
+                                                    >
+                                                        <SelectTrigger className="bg-blue-500/10 border-blue-500/20 h-8 text-xs text-blue-300">
+                                                            <SelectValue placeholder="Select Target Table" />
+                                                        </SelectTrigger>
+                                                        <SelectContent className="bg-neutral-800 border-white/10">
+                                                            {refTables.map((t) => (
+                                                                <SelectItem key={t} value={t} className="text-neutral-300">
+                                                                    {t}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+
+                                                    <Select
+                                                        value={c.fkTargetColumn}
+                                                        disabled={!c.fkTargetTable || fetchingTable === c.fkTargetTable}
+                                                        onValueChange={(v) => updateColumn(i, "fkTargetColumn", v)}
+                                                    >
+                                                        <SelectTrigger className="bg-blue-500/10 border-blue-500/20 h-8 text-xs text-blue-300">
+                                                            <SelectValue
+                                                                placeholder={fetchingTable === c.fkTargetTable ? "Loading..." : "Select Target Column"}
+                                                            />
+                                                        </SelectTrigger>
+                                                        <SelectContent className="bg-neutral-800 border-white/10">
+                                                            {availableColumns[c.fkTargetTable!]?.map((col) => (
+                                                                <SelectItem key={col} value={col} className="text-neutral-300">
+                                                                    {col}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </form>
+                    </div>
 
                     <DrawerFooter>
                         <DrawerClose asChild>

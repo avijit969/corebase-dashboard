@@ -31,7 +31,7 @@ interface StorageFile {
     filename: string;
     contentType: string;
     size: number;
-    publicUrl?: string; // or signed url logic
+    url?: string;
     created_at: string;
 }
 
@@ -53,7 +53,9 @@ export function FileBrowser({ apiKey, bucketName, onRefreshNeeded }: FileBrowser
         try {
             setLoading(true);
             const res = await api.storage.listFiles(apiKey, bucketName);
+            console.log(JSON.stringify(res, null, 2));
             const fileList = Array.isArray(res) ? res : (res.files || []);
+
             setFiles(fileList);
         } catch (error) {
             console.error(error);
@@ -122,7 +124,8 @@ export function FileBrowser({ apiKey, bucketName, onRefreshNeeded }: FileBrowser
                 const uploadRes = await fetch(signRes.uploadUrl, {
                     method: 'PUT',
                     headers: { 'Content-Type': file.type || 'application/octet-stream' },
-                    body: file
+                    body: file,
+                    mode: "cors"
                 });
 
                 if (!uploadRes.ok) {
@@ -242,10 +245,10 @@ export function FileBrowser({ apiKey, bucketName, onRefreshNeeded }: FileBrowser
                     {files.map((file) => (
                         <div key={file.id} className="group relative bg-neutral-900 border border-white/5 hover:border-orange-500/50 rounded-xl p-4 transition-all duration-200 hover:shadow-lg hover:shadow-orange-900/10 flex flex-col gap-3">
                             <div className="aspect-square rounded-lg bg-black/40 flex items-center justify-center overflow-hidden relative">
-                                {file.contentType.startsWith('image/') && file.publicUrl ? (
-                                    <img src={file.publicUrl} alt={file.filename} className="w-full h-full object-cover" />
+                                {file.contentType?.startsWith('image/') && file.url ? (
+                                    <img src={file.url} alt={file.filename} className="w-full h-full object-cover" />
                                 ) : (
-                                    <FileIcon type={file.contentType} />
+                                    <FileIcon type={file.contentType || 'application/octet-stream'} />
                                 )}
                             </div>
 
@@ -266,9 +269,9 @@ export function FileBrowser({ apiKey, bucketName, onRefreshNeeded }: FileBrowser
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="w-40 bg-neutral-900 border-white/10 text-white">
-                                        <DropdownMenuItem onClick={() => copyUrl(file.key)}>
+                                        <DropdownMenuItem onClick={() => copyUrl(file?.url!)}>
                                             <Copy className="w-4 h-4 mr-2" />
-                                            Copy Key
+                                            Copy URL
                                         </DropdownMenuItem>
                                         <DropdownMenuSeparator className="bg-white/10" />
                                         <DropdownMenuItem onClick={() => handleDelete(file.id)} className="text-red-400 hover:text-red-300 hover:bg-red-900/20">

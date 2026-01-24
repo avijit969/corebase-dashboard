@@ -164,55 +164,31 @@ export default function TableDetailsPage() {
                 </div>
             </div>
 
-            {/* Config & RLS Summary (Placeholder for now) */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="bg-neutral-900/50 border-white/10 text-white backdrop-blur-sm">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-400 uppercase">RLS Enabled</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-green-400">Active</div>
-                        {/* We could show details here later */}
-                    </CardContent>
-                </Card>
-                <Card className="bg-neutral-900/50 border-white/10 text-white backdrop-blur-sm">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-400 uppercase">Indexes</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{schema.indexes?.length || 0}</div>
-                    </CardContent>
-                </Card>
-                <Card className="bg-neutral-900/50 border-white/10 text-white backdrop-blur-sm">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-400 uppercase">Total Columns</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{schema.columns.length}</div>
-                    </CardContent>
-                </Card>
-            </div>
-
             {/* Schema Table */}
-            <Card className="bg-neutral-900/50 border-white/10 text-white backdrop-blur-sm">
-                <CardHeader>
+            <Card className="bg-transparent border-0 shadow-none">
+                <CardHeader className="px-0 pt-0 pb-6">
                     <div className="flex items-center justify-between">
-                        <CardTitle>Table Schema</CardTitle>
+                        <div>
+                            <CardTitle className="text-xl font-semibold text-white">Schema</CardTitle>
+                            <CardDescription className="text-neutral-400 mt-1">
+                                {schema.columns.length} columns defined in this table.
+                            </CardDescription>
+                        </div>
                         {currentApiKey && (
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-3">
                                 <AddForeignKeyDialog
                                     apiKey={currentApiKey}
                                     tableName={tableName}
                                     existingColumns={schema.columns.map(c => c.name)}
                                     onSuccess={handleRefresh}
                                 >
-                                    <Button size="sm" variant="outline" className="border-white/10 hover:bg-white/5 text-white">
-                                        <Link2 className="w-4 h-4 mr-2" />
+                                    <Button size="sm" variant="secondary" className="bg-neutral-800 hover:bg-neutral-700 text-white border border-white/10">
+                                        <Link2 className="w-4 h-4 mr-2 text-orange-500" />
                                         Add Relation
                                     </Button>
                                 </AddForeignKeyDialog>
                                 <AddColumnDialog apiKey={currentApiKey} tableName={tableName} onColumnAdded={handleRefresh}>
-                                    <Button size="sm" variant="outline" className="border-white/10 hover:bg-white/5 text-white">
+                                    <Button size="sm" className="bg-white text-black hover:bg-neutral-200">
                                         <Type className="w-4 h-4 mr-2" />
                                         Add Column
                                     </Button>
@@ -220,49 +196,56 @@ export default function TableDetailsPage() {
                             </div>
                         )}
                     </div>
-                    <CardDescription className="text-gray-400">
-                        View and manage columns for this table.
-                    </CardDescription>
                 </CardHeader>
-                <CardContent>
-                    <div className="rounded-md border border-white/10 overflow-hidden">
+                <CardContent className="px-0">
+                    <div className="rounded-xl border border-white/10 overflow-hidden bg-neutral-900/40 backdrop-blur-sm">
                         <table className="w-full text-sm">
-                            <thead className="bg-white/5">
-                                <tr className="text-left text-gray-400">
-                                    <th className="p-3 font-medium">Name</th>
-                                    <th className="p-3 font-medium">Type</th>
-                                    <th className="p-3 font-medium">Attributes</th>
-                                    <th className="p-3 font-medium text-right">Actions</th>
+                            <thead className="bg-white/5 border-b border-white/5">
+                                <tr className="text-left text-neutral-400">
+                                    <th className="p-4 font-medium w-1/4">Name</th>
+                                    <th className="p-4 font-medium w-1/4">Type</th>
+                                    <th className="p-4 font-medium w-1/3">Attributes</th>
+                                    <th className="p-4 font-medium text-right"></th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5">
                                 {schema.columns.map((col, i) => (
-                                    <tr key={i} className="hover:bg-white/5 transition-colors">
-                                        <td className="p-3 font-medium text-white flex items-center gap-2" title={col.primary ? "Primary Key" : ""}>
-                                            {col.primary && <Key className="w-3 h-3 text-yellow-500" />}
-                                            {col.name}
+                                    <tr key={i} className="hover:bg-white/5 transition-colors group">
+                                        <td className="p-4 font-medium text-white">
+                                            <div className="flex items-center gap-2">
+                                                {col.primary && <Key className="w-3.5 h-3.5 text-yellow-500 shrink-0" />}
+                                                <span className={col.primary ? "text-yellow-500/90" : ""}>{col.name}</span>
+                                            </div>
                                         </td>
-                                        <td className="p-3 text-blue-300 font-mono">{col.type}</td>
-                                        <td className="p-3 text-gray-400">
-                                            <div className="flex gap-2">
-                                                {col.primary && <span className="bg-yellow-500/10 text-yellow-500 text-xs px-2 py-0.5 rounded">PK</span>}
-                                                {col.notNull && <span className="bg-red-500/10 text-red-400 text-xs px-2 py-0.5 rounded">NN</span>}
-                                                {col.default !== undefined && col.default !== '' && <span className="bg-gray-700 text-gray-300 text-xs px-2 py-0.5 rounded">Default: {String(col.default)}</span>}
-                                                {col.references && (
-                                                    <span className="bg-blue-500/10 text-blue-400 text-xs px-2 py-0.5 rounded flex items-center gap-1" title={`References ${col.references.table}.${col.references.column}`}>
-                                                        <Link2 className="w-3 h-3" />
-                                                        {col.references.table}.{col.references.column}
+                                        <td className="p-4">
+                                            <span className="font-mono text-xs bg-neutral-800 border border-white/5 px-2 py-1 rounded text-neutral-300">
+                                                {col.type}
+                                            </span>
+                                        </td>
+                                        <td className="p-4 text-neutral-400">
+                                            <div className="flex flex-wrap gap-2">
+                                                {col.primary && <span className="bg-yellow-500/10 text-yellow-500 text-[10px] px-2 py-0.5 rounded font-medium border border-yellow-500/20">PK</span>}
+                                                {col.notNull && <span className="bg-red-500/10 text-red-400 text-[10px] px-2 py-0.5 rounded font-medium border border-red-500/20">NOT NULL</span>}
+                                                {col.default !== undefined && col.default !== '' && (
+                                                    <span className="bg-neutral-800 text-neutral-400 text-[10px] px-2 py-0.5 rounded border border-white/5">
+                                                        DEF: {String(col.default)}
                                                     </span>
+                                                )}
+                                                {col.references && (
+                                                    <div className="flex items-center gap-1.5 bg-blue-500/10 text-blue-400 text-[10px] px-2 py-0.5 rounded border border-blue-500/20" title={`References ${col.references.table}.${col.references.column}`}>
+                                                        <Link2 className="w-3 h-3" />
+                                                        <span>{col.references.table}.{col.references.column}</span>
+                                                    </div>
                                                 )}
                                             </div>
                                         </td>
-                                        <td className="p-3 text-right">
-                                            <div className="flex items-center justify-end gap-2">
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-white" onClick={() => openRenameDialog(col.name)}>
+                                        <td className="p-4 text-right opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <div className="flex items-center justify-end gap-1">
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-500 hover:text-white" onClick={() => openRenameDialog(col.name)}>
                                                     <Edit2 className="w-4 h-4" />
                                                 </Button>
                                                 {!col.primary && (
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-red-400 hover:text-red-300 hover:bg-red-900/20" onClick={() => handleDeleteColumn(col.name)}>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-500 hover:text-red-400 hover:bg-red-950/30" onClick={() => handleDeleteColumn(col.name)}>
                                                         <Trash2 className="w-4 h-4" />
                                                     </Button>
                                                 )}

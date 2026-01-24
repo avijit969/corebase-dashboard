@@ -43,6 +43,7 @@ export function BucketSidebar({ apiKey, selectedBucket, onSelectBucket }: Bucket
         try {
             setLoading(true);
             const res = await api.storage.listBuckets(apiKey);
+
             setBuckets(res.buckets || []);
         } catch (error) {
             console.error(error);
