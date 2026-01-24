@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Layers, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
+import { useAuthStore } from "@/lib/store/auth-store";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -27,10 +28,25 @@ export default function LoginPage() {
             const response = await api.auth.login(formData.email, formData.password);
             // Store token
             if (response.access_token) {
-                localStorage.setItem("platform_token", response.access_token);
-                // Also simpler user email storage for sidebar
-                localStorage.setItem("platform_user_email", formData.email);
+                // Save to store
+                const setToken = useAuthStore.getState().setToken;
+                const setUser = useAuthStore.getState().setUser;
 
+                setToken(response.access_token);
+
+                // Construct user object from response or form data
+                // Assuming response might contain user details, otherwise use email
+                const user = (response as any).user || {
+                    id: (response as any).user_id || 'user_' + Date.now(),
+                    email: formData.email,
+                    name: (response as any).name || 'User'
+                };
+                setUser(user);
+
+                // Keep localStorage for compatibility with other parts if any (optional but safe)
+                localStorage.setItem("platform_token", response.access_token);
+
+                console.log("user is", response);
                 toast.success("Welcome back!", {
                     description: "You have successfully signed in."
                 });

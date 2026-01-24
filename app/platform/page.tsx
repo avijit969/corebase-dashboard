@@ -26,6 +26,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useProjectStore } from '@/lib/stores/project-store';
+import { useAuthStore } from '@/lib/store/auth-store';
 
 interface Project {
     id: string;
@@ -45,18 +46,35 @@ export default function ProjectsPage() {
     const [creating, setCreating] = useState(false);
     const [token, setToken] = useState<string | null>(null);
     const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
-    const { setApiKey } = useProjectStore()
-    useEffect(() => {
-        // Check auth
-        const storedToken = localStorage.getItem("platform_token");
-        if (!storedToken) {
-            router.push("/platform/login");
-            return;
-        }
-        setToken(storedToken);
+    const { setApiKey } = useProjectStore();
+    const { setUser } = useAuthStore();
 
-        fetchProjects(storedToken);
-    }, [router]);
+    useEffect(() => {
+        const init = async () => {
+            const storedToken = localStorage.getItem("platform_token");
+            if (!storedToken) {
+                router.push("/platform/login");
+                return;
+            }
+            setToken(storedToken);
+
+            try {
+                // Fetch user details and update store
+                const userData = await api.auth.me(storedToken);
+                console.log("user is", userData);
+                if (userData) {
+                    setUser({ email: userData.user.email, name: userData.user.name, id: userData.user.id });
+                }
+
+                // Fetch projects
+                await fetchProjects(storedToken);
+            } catch (error) {
+                console.error("Failed to initialize platform:", error);
+            }
+        };
+
+        init();
+    }, [router, setUser]);
 
     const fetchProjects = async (authToken: string) => {
         try {

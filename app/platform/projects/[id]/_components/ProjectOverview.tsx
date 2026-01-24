@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Copy, Calendar, Table as TableIcon } from 'lucide-react';
 import { ProjectDetails } from '../types';
-import { CreateTableDialog } from './CreateTableDialog';
+import { CreateTableDrawer } from './CreateTableDrawer';
 
 interface ProjectOverviewProps {
     project: ProjectDetails;
@@ -30,12 +30,12 @@ export function ProjectOverview({ project, copyToClipboard, refreshProject }: Pr
                                 Manage your project's data schema and content.
                             </CardDescription>
                         </div>
-                        <CreateTableDialog project={project} onTableCreated={refreshProject}>
+                        <CreateTableDrawer project={project} onTableCreated={refreshProject}>
                             <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white border-0">
                                 <TableIcon className="w-4 h-4 mr-2" />
                                 Create Table
                             </Button>
-                        </CreateTableDialog>
+                        </CreateTableDrawer>
                     </div>
                 </CardHeader>
                 <CardContent>

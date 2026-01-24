@@ -568,11 +568,100 @@ Permanently delete a table.
 ```
 
 ---
+## 5. Storage (Buckets & Files)
+*Manage file uploads and logical buckets.*
 
-## 5. Storage
-*File uploads.*
+### 1. Bucket Operations
 
-### Get Signed Upload URL
+#### Create Bucket
+Create a new logical bucket to organize files.
+
+*   **Endpoint**: `POST /v1/storage/buckets`
+*   **Headers**: `x-api-key: <project_api_key>`
+
+**Request Body:**
+```json
+{
+  "name": "avatars",
+  "public": true,
+  "allowedMimeTypes": ["image/png", "image/jpeg"],
+  "fileSizeLimit": 5242880
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "status": "success",
+  "data": {
+    "message": "Bucket created",
+    "bucket": {
+      "name": "avatars",
+      "public": true
+    }
+  }
+}
+```
+
+#### List Buckets
+List all buckets in the project.
+
+*   **Endpoint**: `GET /v1/storage/buckets`
+*   **Headers**: `x-api-key: <project_api_key>`
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": {
+    "buckets": [
+      {
+        "id": "avatars",
+        "name": "avatars",
+        "public": true,
+        "created_at": "..."
+      }
+    ]
+  }
+}
+```
+
+#### Get Bucket Details
+Get details of a specific bucket and its files.
+
+*   **Endpoint**: `GET /v1/storage/buckets/:name`
+*   **Headers**: `x-api-key: <project_api_key>`
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": {
+    "bucket": { ... },
+    "files": [ ... ]
+  }
+}
+```
+
+#### Delete Bucket
+Delete a bucket. **Bucket must be empty.**
+
+*   **Endpoint**: `DELETE /v1/storage/buckets/:name`
+*   **Headers**: `x-api-key: <project_api_key>`
+
+#### Empty Bucket
+Remove all files from a bucket (Metadata only for now).
+
+*   **Endpoint**: `POST /v1/storage/buckets/:name/empty`
+*   **Headers**: `x-api-key: <project_api_key>`
+
+---
+
+### 2. File Operations (Upload Flow)
+
+To upload a file into a bucket, follow this 2-step process.
+
+#### Step 1: Get Signed URL
 *   **Endpoint**: `POST /v1/storage/upload/sign`
 *   **Headers**:
     *   `x-api-key`: `<project_api_key>`
@@ -581,9 +670,111 @@ Permanently delete a table.
 **Request Body:**
 ```json
 {
-  "filename": "avatar.png",
+  "bucketName": "avatars", 
+  "filename": "user_pic.png",
   "contentType": "image/png",
   "size": 10240
+}
+```
+*Note: `bucketName` is now required.*
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": {
+    "uploadUrl": "https://storage.example.com/...",
+    "publicUrl": "https://pub-<id>.r2.dev/...",
+    "key": "proj_.../avatars/...",
+    "fileId": "file_...",
+    "bucket": "avatars"
+  }
+}
+```
+
+#### Step 2: Upload File (PUT)
+Use the `uploadUrl` from Step 1.
+
+*   **Method**: `PUT`
+*   **URL**: `<uploadUrl>`
+*   **Headers**: 
+    *   `Content-Type`: `<contentType>` (Must match Step 1)
+*   **Body**: Binary File Content
+
+#### List Files
+List all files, optionally filtered by bucket.
+
+*   **Endpoint**: `GET /v1/storage/files?bucket=avatars`
+*   **Headers**: `x-api-key: <project_api_key>`
+
+#### Delete File
+Delete a specific file.
+
+*   **Endpoint**: `DELETE /v1/storage/files/:id`
+*   **Headers**: `x-api-key: <project_api_key>`
+
+
+---
+
+## 6. Data Operations
+*Perform CRUD operations on table data.*
+*Requires `x-api-key` header.*
+
+### Insert Data
+Insert one or more rows into a table.
+
+*   **Endpoint**: `POST /v1/table_operation/insert/:table_name`
+*   **Headers**: 
+    *   `x-api-key`: `<project_api_key>`
+    *   `Authorization`: `Bearer <user_token>` (If RLS requires auth)
+
+**Request Body:**
+*Can be a single object, an array of objects, or enclosed in a `values` key.*
+
+```json
+[
+  {
+    "title": "My First Post",
+    "name":"Disha",
+    "user_id": "user_123"
+  },
+  {
+    "title": "Another Post",
+    "name":"Disha",
+    "user_id": "user_123"
+  }
+]
+```
+
+**Response (201 Created):**
+```json
+{
+  "status": "success",
+  "data": {
+    "message": "Rows inserted successfully",
+    "count": 2
+  }
+}
+```
+
+### Update Data
+Update rows based on a condition.
+
+*   **Endpoint**: `PUT /v1/table_operation/update/:table_name`
+*   **Headers**: 
+    *   `x-api-key`: `<project_api_key>`
+    *   `Authorization`: `Bearer <user_token>`
+
+**Request Body:**
+```json
+{
+  "updates": {
+    "title": "Updated Title",
+    "name":"Updated Name"
+  },
+  "where": {
+    "id": 1
+  }
 }
 ```
 
@@ -592,13 +783,83 @@ Permanently delete a table.
 {
   "status": "success",
   "data": {
-    "uploadUrl": "https://storage.example.com/proj_.../user_.../avatar.png?signature=...",
-    "key": "proj_.../user_.../avatar.png"
+    "message": "Rows updated successfully",
+    "changes": 1
   }
 }
 ```
 
----
+### Delete Data
+Delete rows based on a condition.
+
+*   **Endpoint**: `DELETE /v1/table_operation/delete/:table_name`
+*   **Headers**: 
+    *   `x-api-key`: `<project_api_key>`
+    *   `Authorization`: `Bearer <user_token>`
+
+**Request Body:**
+```json
+{
+  "where": {
+    "id": 1
+  }
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": {
+    "message": "Rows deleted successfully",
+    "changes": 1
+  }
+}
+```
+
+### Select Data (Query)
+Query data with filtering, sorting, and pagination.
+
+*   **Endpoint**: `POST /v1/table_operation/select/:table_name`
+*   **Headers**: 
+    *   `x-api-key`: `<project_api_key>`
+    *   `Authorization`: `Bearer <user_token>`
+
+**Request Body (Optional):**
+```json
+{
+  "columns": ["id", "title", "created_at"],
+  "where": {
+    "user_id": "user_123"
+  },
+  "sort": "created_at",
+  "order": "DESC",
+  "limit": 10,
+  "page": 1
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": {
+    "data": [
+      {
+        "id": 1,
+        "title": "My First Post",
+        "created_at": "2024-03-20 10:00:00"
+      }
+    ],
+    "meta": {
+      "total": 1,
+      "page": 1,
+      "limit": 10,
+      "totalPages": 1
+    }
+  }
+}
+```
 
 ## Error Response Format
 All errors follow this format:

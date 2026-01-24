@@ -45,6 +45,16 @@ export const api = {
             });
             return handleResponse(res);
         },
+        me: async (token: string): Promise<any> => {
+            const res = await fetch(`${API_BASE_URL}/platform/auth/user`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            return handleResponse(res);
+        },
     },
     projects: {
         create: async (name: string, token: string): Promise<any> => {
@@ -173,4 +183,73 @@ export const api = {
             return handleResponse(res);
         }
     },
+    storage: {
+        listBuckets: async (apiKey: string): Promise<any> => {
+            const res = await fetch(`${API_BASE_URL}/storage/buckets`, {
+                method: "GET",
+                headers: { "x-api-key": apiKey },
+            });
+            return handleResponse(res);
+        },
+        createBucket: async (apiKey: string, bucketDef: { name: string; public: boolean; allowedMimeTypes?: string[]; fileSizeLimit?: number }): Promise<any> => {
+            const res = await fetch(`${API_BASE_URL}/storage/buckets`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey
+                },
+                body: JSON.stringify(bucketDef),
+            });
+            return handleResponse(res);
+        },
+        getBucket: async (apiKey: string, name: string): Promise<any> => {
+            const res = await fetch(`${API_BASE_URL}/storage/buckets/${name}`, {
+                method: "GET",
+                headers: { "x-api-key": apiKey },
+            });
+            return handleResponse(res);
+        },
+        deleteBucket: async (apiKey: string, name: string): Promise<any> => {
+            const res = await fetch(`${API_BASE_URL}/storage/buckets/${name}`, {
+                method: "DELETE",
+                headers: { "x-api-key": apiKey },
+            });
+            return handleResponse(res);
+        },
+        emptyBucket: async (apiKey: string, name: string): Promise<any> => {
+            const res = await fetch(`${API_BASE_URL}/storage/buckets/${name}/empty`, {
+                method: "POST",
+                headers: { "x-api-key": apiKey },
+            });
+            return handleResponse(res);
+        },
+        listFiles: async (apiKey: string, bucketName?: string): Promise<any> => {
+            const url = bucketName
+                ? `${API_BASE_URL}/storage/files?bucket=${bucketName}`
+                : `${API_BASE_URL}/storage/files`;
+            const res = await fetch(url, {
+                method: "GET",
+                headers: { "x-api-key": apiKey },
+            });
+            return handleResponse(res);
+        },
+        getUploadUrl: async (apiKey: string, fileData: { bucketName: string; filename: string; contentType: string; size: number }): Promise<any> => {
+            const res = await fetch(`${API_BASE_URL}/storage/upload/sign`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey
+                },
+                body: JSON.stringify(fileData),
+            });
+            return handleResponse(res);
+        },
+        deleteFile: async (apiKey: string, fileId: string): Promise<any> => {
+            const res = await fetch(`${API_BASE_URL}/storage/files/${fileId}`, {
+                method: "DELETE",
+                headers: { "x-api-key": apiKey },
+            });
+            return handleResponse(res);
+        }
+    }
 };

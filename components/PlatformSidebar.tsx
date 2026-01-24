@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Layers, LogOut, Settings, User, Database, Users, ChevronDown, Plus } from 'lucide-react';
+import { Layers, LogOut, Settings, User, Database, Users, ChevronDown, Plus, Folder } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -13,6 +13,7 @@ import {
     DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 import { api } from '@/lib/api';
+import { useAuthStore } from '@/lib/store/auth-store';
 
 interface Project {
     id: string;
@@ -24,6 +25,7 @@ export function PlatformSidebar() {
     const router = useRouter();
     const [projects, setProjects] = useState<Project[]>([]);
     const [currentProject, setCurrentProject] = useState<Project | null>(null);
+    const { token } = useAuthStore();
 
     // Check if we are in a project view
     const isProjectView = pathname?.includes('/platform/projects/');
@@ -31,7 +33,6 @@ export function PlatformSidebar() {
 
     useEffect(() => {
         const fetchProjects = async () => {
-            const token = localStorage.getItem("platform_token");
             if (!token) return;
             try {
                 const data = await api.projects.list(token);
@@ -56,7 +57,7 @@ export function PlatformSidebar() {
         };
 
         fetchProjects();
-    }, [projectId]);
+    }, [projectId, token]);
 
     return (
         <aside className="w-64 border-r border-white/10 bg-black hidden md:flex flex-col sticky top-0 h-screen z-50">
@@ -70,6 +71,7 @@ export function MobileSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: (
     const router = useRouter();
     const [projects, setProjects] = useState<Project[]>([]);
     const [currentProject, setCurrentProject] = useState<Project | null>(null);
+    const { token } = useAuthStore();
 
     // Check if we are in a project view
     const isProjectView = pathname?.includes('/platform/projects/');
@@ -77,7 +79,6 @@ export function MobileSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: (
 
     useEffect(() => {
         const fetchProjects = async () => {
-            const token = localStorage.getItem("platform_token");
             if (!token) return;
             try {
                 const data = await api.projects.list(token);
@@ -100,7 +101,7 @@ export function MobileSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: (
             }
         };
         fetchProjects();
-    }, [projectId]);
+    }, [projectId, token]);
 
     useEffect(() => {
         if (isOpen) {
@@ -137,6 +138,13 @@ function SidebarContent({ projects, currentProject, isProjectView, projectId, ro
     setCurrentProject: (p: Project | null) => void;
 }) {
     const pathname = usePathname();
+    const { user, logout } = useAuthStore();
+
+    const handleLogout = () => {
+        logout();
+        router.push('/');
+    };
+
     return (
         <>
             {/* Project Switcher / Brand Header */}
@@ -208,6 +216,11 @@ function SidebarContent({ projects, currentProject, isProjectView, projectId, ro
                                     active={pathname === `/platform/projects/${projectId}` || pathname?.includes(`/platform/projects/${projectId}/tables/`)}
                                     icon={<Database className="w-4 h-4" />}
                                 >Database</NavLink>
+                                <NavLink
+                                    href={`/platform/projects/${projectId}/storage`}
+                                    active={pathname?.includes(`/platform/projects/${projectId}/storage`)}
+                                    icon={<Folder className="w-4 h-4" />}
+                                >Storage</NavLink>
                                 <NavLink href={`/platform/projects/${projectId}/users`} icon={<Users className="w-4 h-4" />}>Users</NavLink>
                                 <NavLink href={`/platform/projects/${projectId}/settings`} icon={<Settings className="w-4 h-4" />}>Settings</NavLink>
                             </>
@@ -217,17 +230,37 @@ function SidebarContent({ projects, currentProject, isProjectView, projectId, ro
             </div>
 
             {/* User Footer */}
-            <div className="mt-auto border-t border-white/10 pt-4">
-                <div className="flex items-center gap-3 px-2 mb-4">
-                    <div className="w-8 h-8 rounded-full bg-neutral-800 flex items-center justify-center border border-white/10">
-                        <User className="w-4 h-4 text-gray-400" />
-                    </div>
-                    <div className="flex-1 overflow-hidden">
-                        <p className="text-sm font-medium text-white truncate">Dev Account</p>
-                        <p className="text-xs text-gray-500 truncate">dev@corebase.com</p>
-                    </div>
-                </div>
-                <NavLink href="/" icon={<LogOut className="w-4 h-4" />}>Sign Out</NavLink>
+            {/* User Footer */}
+            <div className="mt-auto border-t border-white/10 p-2">
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="w-full justify-between h-auto py-2 px-2 hover:bg-white/5 border border-transparent hover:border-white/10 group">
+                            <div className="flex items-center gap-3 overflow-hidden">
+                                <div className="w-8 h-8 rounded-full bg-neutral-800 flex items-center justify-center border border-white/10 shrink-0">
+                                    <User className="w-4 h-4 text-gray-400 group-hover:text-white transition-colors" />
+                                </div>
+                                <div className="flex flex-col items-start overflow-hidden text-left">
+                                    <p className="text-sm font-medium text-gray-200 group-hover:text-white truncate w-[130px]">{user?.name || 'User'}</p>
+                                    <p className="text-xs text-gray-500 group-hover:text-gray-400 truncate w-[130px]">{user?.email || 'user@example.com'}</p>
+                                </div>
+                            </div>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56 bg-neutral-900 border-white/10 text-white mb-2" side="right" sideOffset={10}>
+                        <div className="px-2 py-1.5 text-sm font-semibold text-gray-400 border-b border-white/10 mb-1">
+                            My Account
+                        </div>
+                        <DropdownMenuItem className="focus:bg-white/10 cursor-pointer" onClick={() => router.push('/platform/settings')}>
+                            <Settings className="mr-2 h-4 w-4" />
+                            Settings
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator className="bg-white/10" />
+                        <DropdownMenuItem onClick={handleLogout} className="focus:bg-white/10 cursor-pointer text-red-400 focus:text-red-400">
+                            <LogOut className="mr-2 h-4 w-4" />
+                            Sign Out
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
         </>
     );
