@@ -25,8 +25,8 @@ export function ProjectSidebar({ activeTab, setActiveTab }: ProjectSidebarProps)
                         variant="ghost"
                         onClick={() => setActiveTab(tab.id)}
                         className={`w-full justify-start gap-2 relative ${activeTab === tab.id
-                                ? 'bg-white/10 text-white'
-                                : 'text-gray-400 hover:text-white hover:bg-white/5'
+                            ? 'bg-white/10 text-white'
+                            : 'text-gray-400 hover:text-white hover:bg-white/5'
                             }`}
                     >
                         <tab.icon className="w-4 h-4" />

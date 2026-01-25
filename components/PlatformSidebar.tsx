@@ -119,7 +119,7 @@ export function MobileSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: (
             {/* Sidebar Panel */}
             <div className="relative flex-1 w-full max-w-xs bg-black border-r border-white/10 p-4 h-full overflow-y-auto animate-in slide-in-from-left duration-300">
                 <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-gray-400" onClick={onClose}>
-                    <LogOut className="w-5 h-5 rotate-180" /> {/* Using LogOut as a generic back/close icon style or replace with X */}
+                    <LogOut className="w-5 h-5 rotate-180" />
                 </Button>
                 <div className="mt-8 h-full flex flex-col">
                     <SidebarContent projects={projects} currentProject={currentProject} isProjectView={isProjectView} projectId={projectId} router={router} setCurrentProject={setCurrentProject} />
@@ -148,7 +148,7 @@ function SidebarContent({ projects, currentProject, isProjectView, projectId, ro
     return (
         <>
             {/* Project Switcher / Brand Header */}
-            <div className="mb-8">
+            <div className="m-2">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="w-full justify-between px-2 h-12 hover:bg-white/5 border border-transparent hover:border-white/10">
@@ -201,12 +201,12 @@ function SidebarContent({ projects, currentProject, isProjectView, projectId, ro
                     <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
                         {isProjectView ? "Project Menu" : "Platform"}
                     </div>
-                    <nav className="space-y-1">
+                    <nav className="space-y-4">
                         {!isProjectView && (
-                            <>
+                            <div className="flex flex-col gap-2">
                                 <NavLink href="/platform" icon={<Layers className="w-4 h-4" />}>Projects</NavLink>
                                 <NavLink href="/platform/settings" icon={<Settings className="w-4 h-4" />}>Settings</NavLink>
-                            </>
+                            </div>
                         )}
 
                         {isProjectView && projectId && (
