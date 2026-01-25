@@ -2,9 +2,17 @@ import React from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Copy, Calendar, Table as TableIcon } from 'lucide-react';
+import {
+    Copy,
+    Calendar,
+    Table as TableIcon,
+    Database,
+    FileJson,
+    Settings2
+} from 'lucide-react';
 import { ProjectDetails } from '../types';
 import { CreateTableDrawer } from './CreateTableDrawer';
+import { toast } from 'sonner';
 
 interface ProjectOverviewProps {
     project: ProjectDetails;
@@ -15,82 +23,123 @@ interface ProjectOverviewProps {
 export function ProjectOverview({ project, copyToClipboard, refreshProject }: ProjectOverviewProps) {
     const createdDate = project.meta.created_at ? new Date(project.meta.created_at).toLocaleDateString() : 'N/A';
 
+    const handleCopy = (text: string) => {
+        copyToClipboard(text);
+        toast.success("Copied to clipboard");
+    };
+
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in duration-500">
-            {/* Tables Card */}
-            <Card className="col-span-2 bg-neutral-900/50 border-white/10 text-white backdrop-blur-sm">
-                <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <CardTitle className="flex items-center gap-2">
-                                <TableIcon className="w-5 h-5 text-orange-400" />
-                                Database Tables
-                            </CardTitle>
-                            <CardDescription className="text-gray-400 mt-1">
-                                Manage your project's data schema and content.
-                            </CardDescription>
+        <div className="space-y-8 animate-in fade-in duration-500">
+            {/* Stats / Details Row */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card className="bg-neutral-900/50 border-white/10 text-white backdrop-blur-sm">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium text-neutral-400 uppercase tracking-wider">Project ID</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex items-center justify-between gap-2 group">
+                            <code className="text-lg font-mono text-white truncate">{project.id}</code>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-500 hover:text-white" onClick={() => handleCopy(project.id)}>
+                                <Copy className="w-4 h-4" />
+                            </Button>
                         </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="bg-neutral-900/50 border-white/10 text-white backdrop-blur-sm">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium text-neutral-400 uppercase tracking-wider">Total Tables</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex items-center gap-2">
+                            <TableIcon className="w-5 h-5 text-orange-500" />
+                            <span className="text-2xl font-bold text-white">{project.tables ? project.tables.length : 0}</span>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="bg-neutral-900/50 border-white/10 text-white backdrop-blur-sm">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium text-neutral-400 uppercase tracking-wider">Created At</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex items-center gap-2">
+                            <Calendar className="w-5 h-5 text-blue-500" />
+                            <span className="text-lg text-white">{createdDate}</span>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Tables Section */}
+            <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                            <Database className="w-6 h-6 text-orange-500" />
+                            Database Tables
+                        </h2>
+                        <p className="text-neutral-400 mt-1">Manage your schema and data content.</p>
+                    </div>
+                    <CreateTableDrawer project={project} onTableCreated={refreshProject}>
+                        <Button className="bg-orange-600 hover:bg-orange-500 text-white">
+                            <TableIcon className="w-4 h-4 mr-2" />
+                            Create Table
+                        </Button>
+                    </CreateTableDrawer>
+                </div>
+
+                {project.tables && project.tables.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {project.tables.map((table: any, i: number) => (
+                            <Card key={i} className="bg-neutral-900/40 border-white/5 hover:border-orange-500/30 transition-all duration-300 group">
+                                <CardHeader className="pb-3">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 rounded-lg bg-white/5 group-hover:bg-orange-500/10 transition-colors">
+                                                <TableIcon className="w-5 h-5 text-neutral-400 group-hover:text-orange-500" />
+                                            </div>
+                                            <CardTitle className="text-lg font-medium text-white group-hover:text-orange-100 transition-colors">
+                                                {table.name}
+                                            </CardTitle>
+                                        </div>
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <Link href={`/platform/projects/${project.id}/tables/${table.name}?view=schema`} className="w-full">
+                                            <Button variant="outline" className="w-full justify-start bg-transparent border-white/10 text-neutral-300 hover:text-white hover:bg-white/5 hover:border-white/20">
+                                                <Settings2 className="w-4 h-4 mr-2 text-blue-400" />
+                                                Schema
+                                            </Button>
+                                        </Link>
+                                        <Link href={`/platform/projects/${project.id}/tables/${table.name}?view=data`} className="w-full">
+                                            <Button variant="outline" className="w-full justify-start bg-transparent border-white/10 text-neutral-300 hover:text-white hover:bg-white/5 hover:border-white/20">
+                                                <FileJson className="w-4 h-4 mr-2 text-green-400" />
+                                                Data
+                                            </Button>
+                                        </Link>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="flex flex-col items-center justify-center py-16 border border-dashed border-white/10 rounded-xl bg-white/2">
+                        <div className="p-4 rounded-full bg-neutral-800 mb-4">
+                            <Database className="w-8 h-8 text-neutral-500" />
+                        </div>
+                        <h3 className="text-lg font-medium text-white mb-1">No tables found</h3>
+                        <p className="text-neutral-500 max-w-sm text-center mb-6">Create your first table to start defining your data model.</p>
                         <CreateTableDrawer project={project} onTableCreated={refreshProject}>
-                            <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white border-0">
-                                <TableIcon className="w-4 h-4 mr-2" />
-                                Create Table
+                            <Button variant="outline" className="border-orange-500/20 text-orange-500 hover:bg-orange-500/10 hover:text-orange-400">
+                                Create New Table
                             </Button>
                         </CreateTableDrawer>
                     </div>
-                </CardHeader>
-                <CardContent>
-                    {project.tables && project.tables.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            {project.tables.map((table: any, i: number) => (
-                                <Link key={i} href={`/platform/projects/${project.id}/tables/${table.name}`}>
-                                    <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 hover:border-orange-500/30 transition-colors group cursor-pointer">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded bg-neutral-800 flex items-center justify-center">
-                                                <TableIcon className="w-4 h-4 text-gray-400 group-hover:text-orange-400 transition-colors" />
-                                            </div>
-                                            <span className="font-medium text-gray-200 group-hover:text-white">{table.name}</span>
-                                        </div>
-                                        <span className="text-xs text-gray-500">View Schema →</span>
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="text-center py-12 border border-dashed border-white/10 rounded-lg">
-                            <p className="text-gray-500">No tables created yet.</p>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-
-            {/* Details/Meta Card */}
-            <Card className="bg-neutral-900/50 border-white/10 text-white backdrop-blur-sm h-fit">
-                <CardHeader>
-                    <CardTitle className="text-lg">Project Details</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="space-y-1">
-                        <p className="text-xs text-gray-500 uppercase font-semibold">Project ID</p>
-                        <div className="flex items-center gap-2 group">
-                            <code className="bg-black/50 px-2 py-1 rounded text-sm text-gray-300 font-mono flex-1 truncate">{project.id}</code>
-                            <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => copyToClipboard(project.id)}>
-                                <Copy className="w-3 h-3" />
-                            </Button>
-                        </div>
-                    </div>
-                    <div className="space-y-1">
-                        <p className="text-xs text-gray-500 uppercase font-semibold">Owner ID</p>
-                        <code className="bg-black/50 px-2 py-1 rounded text-sm text-gray-300 font-mono block truncate">{project.meta.owner_id}</code>
-                    </div>
-                    <div className="space-y-1">
-                        <p className="text-xs text-gray-500 uppercase font-semibold">Created At</p>
-                        <div className="flex items-center gap-2 text-sm text-gray-300">
-                            <Calendar className="w-4 h-4 text-gray-500" />
-                            {createdDate}
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
+                )}
+            </div>
         </div>
     );
 }
+

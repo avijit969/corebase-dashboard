@@ -251,5 +251,53 @@ export const api = {
             });
             return handleResponse(res);
         }
+    },
+    tableOperations: {
+        insert: async (apiKey: string, tableName: string, data: any): Promise<any> => {
+            const res = await fetch(`${API_BASE_URL}/table_operation/insert/${tableName}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey
+                },
+                body: JSON.stringify(data),
+            });
+            return handleResponse(res);
+        },
+        update: async (apiKey: string, tableName: string, data: { updates: any; where: any }): Promise<any> => {
+            const res = await fetch(`${API_BASE_URL}/table_operation/update/${tableName}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey
+                },
+                body: JSON.stringify(data),
+            });
+            return handleResponse(res);
+        },
+        delete: async (apiKey: string, tableName: string, where: any): Promise<any> => {
+            // Check if where IS the body or wrapped in where property based on API docs (body: { where: { ... } })
+            const body = { where };
+            const res = await fetch(`${API_BASE_URL}/table_operation/delete/${tableName}`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey
+                },
+                body: JSON.stringify(body),
+            });
+            return handleResponse(res);
+        },
+        select: async (apiKey: string, tableName: string, query?: any): Promise<any> => {
+            const res = await fetch(`${API_BASE_URL}/table_operation/select/${tableName}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey
+                },
+                body: JSON.stringify(query || {}),
+            });
+            return handleResponse(res);
+        }
     }
 };
