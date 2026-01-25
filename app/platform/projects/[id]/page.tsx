@@ -1,52 +1,38 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import { ProjectOverview } from './_components/ProjectOverview';
-import { ProjectDetails } from './types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useQuery } from '@tanstack/react-query';
 
 export default function ProjectOverviewPage() {
     const params = useParams();
     const router = useRouter();
     const id = params?.id as string;
 
-    const [project, setProject] = useState<ProjectDetails | null>(null);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
+    const fetchProject = async () => {
         const token = localStorage.getItem("platform_token");
         if (!token) {
             router.push("/platform/login");
-            return;
+            return null;
         }
-
-        if (id) {
-            fetchProject(id, token);
-        }
-    }, [id, router]);
-
-    const fetchProject = async (projectId: string, token: string) => {
-        try {
-            setLoading(true);
-            const data = await api.projects.get(projectId, token);
-            setProject(data);
-        } catch (error: any) {
-            console.error("Failed to fetch project details", error);
-            toast.error("Failed to load project details");
-        } finally {
-            setLoading(false);
-        }
+        return await api.projects.get(id, token);
     };
+
+    const { data: project, isLoading, isError, refetch } = useQuery({
+        queryKey: ['project', id],
+        queryFn: fetchProject,
+        enabled: !!id,
+    });
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
         toast.success("Copied to clipboard");
     };
 
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="space-y-6 p-4">
                 <Skeleton className="h-8 w-48 bg-white/10" />
@@ -58,7 +44,7 @@ export default function ProjectOverviewPage() {
         );
     }
 
-    if (!project) return <div>Project not found</div>;
+    if (isError || !project) return <div className="p-4 text-white">Project not found</div>;
 
     return (
         <div className="space-y-6 p-4">
@@ -66,7 +52,7 @@ export default function ProjectOverviewPage() {
             <ProjectOverview
                 project={project}
                 copyToClipboard={copyToClipboard}
-                refreshProject={() => fetchProject(id, localStorage.getItem("platform_token") || "")}
+                refreshProject={() => refetch()}
             />
         </div>
     );

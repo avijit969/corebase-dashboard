@@ -142,7 +142,6 @@ export function CreateTableDrawer({
         });
     };
 
-    /* -------------------- FIXED FK HANDLER -------------------- */
     const handleTargetTableChange = async (
         index: number,
         table: string
@@ -179,7 +178,6 @@ export function CreateTableDrawer({
         }
     };
 
-    /* -------------------- Submit -------------------- */
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -244,7 +242,6 @@ export function CreateTableDrawer({
         }
     };
 
-    /* -------------------- UI -------------------- */
     return (
         <Drawer open={open} onOpenChange={setOpen}>
             <DrawerTrigger asChild>{children}</DrawerTrigger>

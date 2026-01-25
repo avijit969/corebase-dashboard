@@ -40,6 +40,165 @@ interface TableDataViewerProps {
     schema: TableSchema;
 }
 
+const useMediaQuery = (query: string) => {
+    const [value, setValue] = React.useState(false);
+
+    React.useEffect(() => {
+        function onChange(event: MediaQueryListEvent) {
+            setValue(event.matches);
+        }
+
+        const result = matchMedia(query);
+        result.addEventListener("change", onChange);
+        setValue(result.matches);
+
+        return () => result.removeEventListener("change", onChange);
+    }, [query]);
+
+    return value;
+};
+
+interface DataFormProps {
+    schema: TableSchema;
+    formData: Record<string, any>;
+    setFormData: React.Dispatch<React.SetStateAction<Record<string, any>>>;
+    onSubmit: () => void;
+    submitLabel: string;
+    isSubmitting?: boolean;
+    onCancel: () => void;
+}
+
+const DataForm = ({ schema, formData, setFormData, onSubmit, submitLabel, isSubmitting, onCancel }: DataFormProps) => {
+
+    const renderInput = (col: any) => {
+        if (col.primary && col.type === 'integer') return null;
+
+        return (
+            <div key={col.name} className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor={col.name} className="text-right text-gray-400 flex lg:flex-row flex-col">
+                    {col.name} <span className="sm:text-xs opacity-50">({col.type})</span>
+                </Label>
+                <div className="col-span-3">
+                    {col.type === 'boolean' ? (
+                        <div className="flex items-center space-x-2">
+                            <Checkbox
+                                id={col.name}
+                                checked={!!formData[col.name]}
+                                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, [col.name]: checked }))}
+                            />
+                        </div>
+                    ) : (
+                        <Input
+                            id={col.name}
+                            value={formData[col.name] || ''}
+                            onChange={(e) => setFormData(prev => ({ ...prev, [col.name]: e.target.value }))}
+                            className="bg-neutral-800 border-white/10"
+                        />
+                    )}
+                </div>
+            </div>
+        )
+    };
+
+    return (
+        <div className="flex flex-col h-full">
+            <div className="flex-1 overflow-y-auto py-4 px-1 space-y-6">
+                {schema.columns.map(renderInput)}
+            </div>
+            <div className="pt-6 mt-4 border-t border-white/10 flex items-center justify-end gap-3">
+                <Button
+                    variant="ghost"
+                    onClick={onCancel}
+                    className="hover:bg-white/5 active:scale-95 transition-all"
+                >
+                    Cancel
+                </Button>
+                <Button
+                    onClick={onSubmit}
+                    className="bg-orange-600 hover:bg-orange-500 active:scale-95 transition-all min-w-[100px]"
+                    disabled={isSubmitting}
+                >
+                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : submitLabel}
+                </Button>
+            </div>
+        </div>
+    );
+}
+
+interface ResponsiveRowEditorProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    title: string;
+    description?: string;
+    schema: TableSchema;
+    formData: Record<string, any>;
+    setFormData: React.Dispatch<React.SetStateAction<Record<string, any>>>;
+    onSubmit: () => void;
+    submitLabel: string;
+    isSubmitting?: boolean;
+}
+
+const ResponsiveRowEditor = ({
+    open,
+    onOpenChange,
+    title,
+    description,
+    schema,
+    formData,
+    setFormData,
+    onSubmit,
+    submitLabel,
+    isSubmitting
+}: ResponsiveRowEditorProps) => {
+    const isDesktop = useMediaQuery("(min-width: 768px)");
+
+    if (isDesktop) {
+        return (
+            <Sheet open={open} onOpenChange={onOpenChange}>
+                <SheetContent side="right" className="bg-neutral-950 border-white/10 text-white sm:max-w-xl w-full flex flex-col h-full">
+                    <SheetHeader className="pb-4 border-b border-white/10">
+                        <SheetTitle className="text-xl font-bold">{title}</SheetTitle>
+                        {description && <SheetDescription>{description}</SheetDescription>}
+                    </SheetHeader>
+                    <div className="px-4 h-full overflow-hidden">
+                        <DataForm
+                            schema={schema}
+                            formData={formData}
+                            setFormData={setFormData}
+                            onSubmit={onSubmit}
+                            submitLabel={submitLabel}
+                            isSubmitting={isSubmitting}
+                            onCancel={() => onOpenChange(false)}
+                        />
+                    </div>
+                </SheetContent>
+            </Sheet>
+        );
+    }
+
+    return (
+        <Drawer open={open} onOpenChange={onOpenChange}>
+            <DrawerContent className="bg-neutral-950 border-white/10 text-white max-h-[90vh] flex flex-col">
+                <DrawerHeader className="px-6 shrink-0">
+                    <DrawerTitle className="text-xl font-bold">{title}</DrawerTitle>
+                    {description && <DrawerDescription>{description}</DrawerDescription>}
+                </DrawerHeader>
+                <div className="px-6 flex-1 overflow-y-auto pb-6">
+                    <DataForm
+                        schema={schema}
+                        formData={formData}
+                        setFormData={setFormData}
+                        onSubmit={onSubmit}
+                        submitLabel={submitLabel}
+                        isSubmitting={isSubmitting}
+                        onCancel={() => onOpenChange(false)}
+                    />
+                </div>
+            </DrawerContent>
+        </Drawer>
+    );
+};
+
 export function TableDataViewer({ apiKey, tableName, schema }: TableDataViewerProps) {
     const queryClient = useQueryClient();
 
@@ -145,129 +304,6 @@ export function TableDataViewer({ apiKey, tableName, schema }: TableDataViewerPr
         setEditingId(row[pkCol]);
         setFormData({ ...row });
         setIsEditOpen(true);
-    };
-
-    const renderInput = (col: any) => {
-        if (col.primary && col.type === 'integer') return null;
-
-        return (
-            <div key={col.name} className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor={col.name} className="text-right text-gray-400 flex lg:flex-row flex-col">
-                    {col.name} <span className="sm:text-xs opacity-50">({col.type})</span>
-                </Label>
-                <div className="col-span-3">
-                    {col.type === 'boolean' ? (
-                        <div className="flex items-center space-x-2">
-                            <Checkbox
-                                id={col.name}
-                                checked={!!formData[col.name]}
-                                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, [col.name]: checked }))}
-                            />
-                        </div>
-                    ) : (
-                        <Input
-                            id={col.name}
-                            value={formData[col.name] || ''}
-                            onChange={(e) => setFormData(prev => ({ ...prev, [col.name]: e.target.value }))}
-                            className="bg-neutral-800 border-white/10"
-                        />
-                    )}
-                </div>
-            </div>
-        )
-    };
-
-    // Responsive Hook
-    const useMediaQuery = (query: string) => {
-        const [value, setValue] = React.useState(false);
-
-        React.useEffect(() => {
-            function onChange(event: MediaQueryListEvent) {
-                setValue(event.matches);
-            }
-
-            const result = matchMedia(query);
-            result.addEventListener("change", onChange);
-            setValue(result.matches);
-
-            return () => result.removeEventListener("change", onChange);
-        }, [query]);
-
-        return value;
-    };
-
-    const isDesktop = useMediaQuery("(min-width: 768px)");
-
-    const DataForm = ({ onSubmit, submitLabel, isSubmitting }: { onSubmit: () => void, submitLabel: string, isSubmitting?: boolean }) => (
-        <div className="flex flex-col h-full">
-            <div className="flex-1 overflow-y-auto py-4 px-1 space-y-6">
-                {schema.columns.map(renderInput)}
-            </div>
-            <div className="pt-6 mt-4 border-t border-white/10 flex items-center justify-end gap-3">
-                <Button
-                    variant="ghost"
-                    onClick={() => { setIsInsertOpen(false); setIsEditOpen(false); }}
-                    className="hover:bg-white/5 active:scale-95 transition-all"
-                >
-                    Cancel
-                </Button>
-                <Button
-                    onClick={onSubmit}
-                    className="bg-orange-600 hover:bg-orange-500 active:scale-95 transition-all min-w-[100px]"
-                    disabled={isSubmitting}
-                >
-                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : submitLabel}
-                </Button>
-            </div>
-        </div>
-    );
-
-    const ResponsiveRowEditor = ({
-        open,
-        onOpenChange,
-        title,
-        onSubmit,
-        submitLabel,
-        description,
-        isSubmitting
-    }: {
-        open: boolean,
-        onOpenChange: (open: boolean) => void,
-        title: string,
-        onSubmit: () => void,
-        submitLabel: string,
-        description?: string,
-        isSubmitting?: boolean
-    }) => {
-        if (isDesktop) {
-            return (
-                <Sheet open={open} onOpenChange={onOpenChange}>
-                    <SheetContent side="right" className="bg-neutral-950 border-white/10 text-white sm:max-w-xl w-full flex flex-col h-full">
-                        <SheetHeader className="pb-4 border-b border-white/10">
-                            <SheetTitle className="text-xl font-bold">{title}</SheetTitle>
-                            {description && <SheetDescription>{description}</SheetDescription>}
-                        </SheetHeader>
-                        <div className="px-4">
-                            <DataForm onSubmit={onSubmit} submitLabel={submitLabel} isSubmitting={isSubmitting} />
-                        </div>
-                    </SheetContent>
-                </Sheet>
-            );
-        }
-
-        return (
-            <Drawer open={open} onOpenChange={onOpenChange}>
-                <DrawerContent className="bg-neutral-950 border-white/10 text-white max-h-[90vh] flex flex-col">
-                    <DrawerHeader className="px-6 shrink-0">
-                        <DrawerTitle className="text-xl font-bold">{title}</DrawerTitle>
-                        {description && <DrawerDescription>{description}</DrawerDescription>}
-                    </DrawerHeader>
-                    <div className="px-6 flex-1 overflow-y-auto pb-6">
-                        <DataForm onSubmit={onSubmit} submitLabel={submitLabel} isSubmitting={isSubmitting} />
-                    </div>
-                </DrawerContent>
-            </Drawer>
-        );
     };
 
     return (
@@ -391,6 +427,9 @@ export function TableDataViewer({ apiKey, tableName, schema }: TableDataViewerPr
                 submitLabel="Insert Row"
                 description="Add a new record to this table."
                 isSubmitting={insertMutation.isPending}
+                schema={schema}
+                formData={formData}
+                setFormData={setFormData}
             />
 
             <ResponsiveRowEditor
@@ -401,6 +440,9 @@ export function TableDataViewer({ apiKey, tableName, schema }: TableDataViewerPr
                 submitLabel="Save Changes"
                 description="Modify existing data."
                 isSubmitting={updateMutation.isPending}
+                schema={schema}
+                formData={formData}
+                setFormData={setFormData}
             />
         </div>
     );
