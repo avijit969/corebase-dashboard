@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import {
@@ -26,21 +26,13 @@ import {
     DrawerDescription,
     DrawerHeader,
     DrawerTitle,
-    DrawerFooter,
 } from "@/components/ui/drawer";
-import { Loader2, Plus, RefreshCw, Trash2, Pencil, Search, Filter, Copy } from "lucide-react";
+import { Loader2, Plus, RefreshCw, Trash2, Pencil, Copy } from "lucide-react";
 import { TableSchema } from "../types";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
-
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface TableDataViewerProps {
     apiKey: string;
@@ -49,9 +41,7 @@ interface TableDataViewerProps {
 }
 
 export function TableDataViewer({ apiKey, tableName, schema }: TableDataViewerProps) {
-    const [data, setData] = useState<any[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [total, setTotal] = useState(0);
+    const queryClient = useQueryClient();
 
     // Dialogs
     const [isInsertOpen, setIsInsertOpen] = useState(false);
@@ -61,72 +51,81 @@ export function TableDataViewer({ apiKey, tableName, schema }: TableDataViewerPr
     const [formData, setFormData] = useState<Record<string, any>>({});
     const [editingId, setEditingId] = useState<any>(null);
 
-    // Fetch Data
-    const fetchData = async () => {
-        setLoading(true);
-        try {
+    // 1. Query: Fetch Data
+    const { data: queryData, isLoading, isError, refetch } = useQuery({
+        queryKey: ['tableData', apiKey, tableName],
+        queryFn: async () => {
             const res = await api.tableOperations.select(apiKey, tableName, {
                 limit: 50,
-                // order: "DESC" // API doesn't specify default sort column, maybe 'created_at' or PK?
             });
-
-            if (res && res.data) {
-                setData(res.data);
-                setTotal(res.meta?.total || 0);
-            } else if (Array.isArray(res)) {
-                setData(res);
-            }
-        } catch (error) {
-            console.error(error);
-            toast.error("Failed to load data");
-        } finally {
-            setLoading(false);
+            return res;
         }
-    };
+    });
 
-    useEffect(() => {
-        fetchData();
-    }, [apiKey, tableName]);
+    const data = queryData?.data || (Array.isArray(queryData) ? queryData : []) || [];
+    const total = queryData?.meta?.total || data.length || 0;
 
-    // Handle Insert
-    const handleInsert = async () => {
-        try {
-            // Filter out empty strings if column matches certain types? 
-            // For now send as is.
-            await api.tableOperations.insert(apiKey, tableName, formData);
+    // 2. Mutations
+    const insertMutation = useMutation({
+        mutationFn: async (newData: any) => {
+            return await api.tableOperations.insert(apiKey, tableName, newData);
+        },
+        onSuccess: () => {
             toast.success("Row inserted");
             setIsInsertOpen(false);
             setFormData({});
-            fetchData();
-        } catch (error: any) {
+            queryClient.invalidateQueries({ queryKey: ['tableData', apiKey, tableName] });
+        },
+        onError: (error: any) => {
             toast.error(error.message || "Failed to insert");
         }
-    };
+    });
 
-    // Handle Update
-    const handleUpdate = async () => {
-        if (!editingId) return;
-
-        // Find PK
-        const pkCol = schema.columns.find(c => c.primary)?.name || "id";
-
-        try {
-            await api.tableOperations.update(apiKey, tableName, {
-                updates: formData,
-                where: { [pkCol]: editingId }
-            });
+    const updateMutation = useMutation({
+        mutationFn: async ({ updates, where }: { updates: any, where: any }) => {
+            return await api.tableOperations.update(apiKey, tableName, { updates, where });
+        },
+        onSuccess: () => {
             toast.success("Row updated");
             setIsEditOpen(false);
             setFormData({});
             setEditingId(null);
-            fetchData();
-        } catch (error: any) {
+            queryClient.invalidateQueries({ queryKey: ['tableData', apiKey, tableName] });
+        },
+        onError: (error: any) => {
             toast.error(error.message || "Failed to update");
         }
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: async (where: any) => {
+            return await api.tableOperations.delete(apiKey, tableName, where);
+        },
+        onSuccess: () => {
+            toast.success("Row deleted");
+            queryClient.invalidateQueries({ queryKey: ['tableData', apiKey, tableName] });
+        },
+        onError: (error: any) => {
+            toast.error(error.message || "Failed to delete");
+        }
+    });
+
+
+    // Handlers
+    const handleInsert = () => {
+        insertMutation.mutate(formData);
     };
 
-    // Handle Delete
-    const handleDelete = async (row: any) => {
+    const handleUpdate = () => {
+        if (!editingId) return;
+        const pkCol = schema.columns.find(c => c.primary)?.name || "id";
+        updateMutation.mutate({
+            updates: formData,
+            where: { [pkCol]: editingId }
+        });
+    };
+
+    const handleDelete = (row: any) => {
         const pkCol = schema.columns.find(c => c.primary)?.name || "id";
         const pkValue = row[pkCol];
 
@@ -137,25 +136,19 @@ export function TableDataViewer({ apiKey, tableName, schema }: TableDataViewerPr
 
         if (!confirm("Are you sure?")) return;
 
-        try {
-            await api.tableOperations.delete(apiKey, tableName, { [pkCol]: pkValue });
-            toast.success("Row deleted");
-            fetchData();
-        } catch (error: any) {
-            toast.error(error.message || "Failed to delete");
-        }
+        deleteMutation.mutate({ [pkCol]: pkValue });
     };
 
     // Open Edit
     const openEdit = (row: any) => {
         const pkCol = schema.columns.find(c => c.primary)?.name || "id";
         setEditingId(row[pkCol]);
-        setFormData({ ...row }); // detailed implementation would filter out non-editable
+        setFormData({ ...row });
         setIsEditOpen(true);
     };
 
     const renderInput = (col: any) => {
-        if (col.primary && col.type === 'integer') return null; // Assume auto-increment for integer PKs
+        if (col.primary && col.type === 'integer') return null;
 
         return (
             <div key={col.name} className="grid grid-cols-4 items-center gap-4">
@@ -205,7 +198,6 @@ export function TableDataViewer({ apiKey, tableName, schema }: TableDataViewerPr
 
     const isDesktop = useMediaQuery("(min-width: 768px)");
 
-    // Define the content form separately to reuse
     const DataForm = ({ onSubmit, submitLabel, isSubmitting }: { onSubmit: () => void, submitLabel: string, isSubmitting?: boolean }) => (
         <div className="flex flex-col h-full">
             <div className="flex-1 overflow-y-auto py-4 px-1 space-y-6">
@@ -230,21 +222,22 @@ export function TableDataViewer({ apiKey, tableName, schema }: TableDataViewerPr
         </div>
     );
 
-    // Responsive Drawer/Sheet Component
     const ResponsiveRowEditor = ({
         open,
         onOpenChange,
         title,
         onSubmit,
         submitLabel,
-        description
+        description,
+        isSubmitting
     }: {
         open: boolean,
         onOpenChange: (open: boolean) => void,
         title: string,
         onSubmit: () => void,
         submitLabel: string,
-        description?: string
+        description?: string,
+        isSubmitting?: boolean
     }) => {
         if (isDesktop) {
             return (
@@ -255,7 +248,7 @@ export function TableDataViewer({ apiKey, tableName, schema }: TableDataViewerPr
                             {description && <SheetDescription>{description}</SheetDescription>}
                         </SheetHeader>
                         <div className="px-4">
-                            <DataForm onSubmit={onSubmit} submitLabel={submitLabel} />
+                            <DataForm onSubmit={onSubmit} submitLabel={submitLabel} isSubmitting={isSubmitting} />
                         </div>
                     </SheetContent>
                 </Sheet>
@@ -270,7 +263,7 @@ export function TableDataViewer({ apiKey, tableName, schema }: TableDataViewerPr
                         {description && <DrawerDescription>{description}</DrawerDescription>}
                     </DrawerHeader>
                     <div className="px-6 flex-1 overflow-y-auto pb-6">
-                        <DataForm onSubmit={onSubmit} submitLabel={submitLabel} />
+                        <DataForm onSubmit={onSubmit} submitLabel={submitLabel} isSubmitting={isSubmitting} />
                     </div>
                 </DrawerContent>
             </Drawer>
@@ -282,8 +275,8 @@ export function TableDataViewer({ apiKey, tableName, schema }: TableDataViewerPr
             {/* Toolbar */}
             <div className="flex items-center justify-between bg-neutral-900/50 p-4 rounded-lg border border-white/5 backdrop-blur-sm sticky top-0 z-20">
                 <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" onClick={fetchData} disabled={loading} className="text-gray-400 hover:text-white border border-transparent hover:border-white/10">
-                        <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                    <Button variant="ghost" size="sm" onClick={() => refetch()} disabled={isLoading} className="text-gray-400 hover:text-white border border-transparent hover:border-white/10">
+                        <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
                         Refresh
                     </Button>
                     <span className="hidden sm:inline-block text-sm text-gray-500 border-l border-white/10 pl-3">
@@ -316,11 +309,17 @@ export function TableDataViewer({ apiKey, tableName, schema }: TableDataViewerPr
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {loading ? (
+                            {isLoading ? (
                                 <TableRow>
                                     <TableCell colSpan={schema.columns.length + 1} className="h-32 text-center text-gray-500">
                                         <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
                                         Loading data...
+                                    </TableCell>
+                                </TableRow>
+                            ) : isError ? (
+                                <TableRow>
+                                    <TableCell colSpan={schema.columns.length + 1} className="h-32 text-center text-red-500">
+                                        Failed to load data
                                     </TableCell>
                                 </TableRow>
                             ) : data.length === 0 ? (
@@ -330,7 +329,7 @@ export function TableDataViewer({ apiKey, tableName, schema }: TableDataViewerPr
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                data.map((row, i) => (
+                                data.map((row: any, i: number) => (
                                     <TableRow key={i} className="border-white/5 hover:bg-white/5 transition-colors group/row">
                                         {schema.columns.map((col) => {
                                             const cellValue = row[col.name];
@@ -391,6 +390,7 @@ export function TableDataViewer({ apiKey, tableName, schema }: TableDataViewerPr
                 onSubmit={handleInsert}
                 submitLabel="Insert Row"
                 description="Add a new record to this table."
+                isSubmitting={insertMutation.isPending}
             />
 
             <ResponsiveRowEditor
@@ -400,8 +400,8 @@ export function TableDataViewer({ apiKey, tableName, schema }: TableDataViewerPr
                 onSubmit={handleUpdate}
                 submitLabel="Save Changes"
                 description="Modify existing data."
+                isSubmitting={updateMutation.isPending}
             />
         </div>
     );
 }
-
