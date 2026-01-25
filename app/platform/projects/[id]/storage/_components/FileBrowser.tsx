@@ -12,7 +12,8 @@ import {
     Copy,
     UploadCloud,
     Loader2,
-    FolderOpen
+    FolderOpen,
+    Menu
 } from 'lucide-react';
 import {
     DropdownMenu,
@@ -22,8 +23,8 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils'; // Assuming this exists, typical shadcn
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerClose } from '@/components/ui/drawer';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface StorageFile {
     id: string;
@@ -39,41 +40,87 @@ interface StorageFile {
 interface FileBrowserProps {
     apiKey: string;
     bucketName: string | null;
-    onRefreshNeeded: () => void;
+    onToggleSidebar?: () => void;
 }
 
-export function FileBrowser({ apiKey, bucketName, onRefreshNeeded }: FileBrowserProps) {
-    const [files, setFiles] = useState<StorageFile[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [uploading, setUploading] = useState(false);
+export function FileBrowser({ apiKey, bucketName, onToggleSidebar }: FileBrowserProps) {
     const [dragActive, setDragActive] = useState(false);
     const [selectedFile, setSelectedFile] = useState<StorageFile | null>(null);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-    const fetchFiles = useCallback(async () => {
-        if (!bucketName || !apiKey) return;
-        try {
-            setLoading(true);
+
+    const queryClient = useQueryClient();
+
+    const { data: files = [], isLoading } = useQuery({
+        queryKey: ['storage-files', bucketName],
+        queryFn: async () => {
+            if (!bucketName || !apiKey) return [];
             const res = await api.storage.listFiles(apiKey, bucketName);
-            console.log(res);
-            const fileList = Array.isArray(res) ? res : (res.files || []);
+            return Array.isArray(res) ? res : (res.files || []);
+        },
+        enabled: !!bucketName && !!apiKey
+    });
 
-            setFiles(fileList);
-        } catch (error) {
-            console.error(error);
-            toast.error("Failed to load files");
-        } finally {
-            setLoading(false);
+    const { mutate: uploadFiles, isPending: isUploading } = useMutation({
+        mutationFn: async (fileList: FileList) => {
+            if (!bucketName) return;
+            let successCount = 0;
+            for (let i = 0; i < fileList.length; i++) {
+                const file = fileList[i];
+                // 1. Get Signed URL
+                const signRes = await api.storage.getUploadUrl(apiKey, {
+                    bucketName,
+                    filename: file.name,
+                    contentType: file.type || 'application/octet-stream',
+                    size: file.size
+                });
+
+                if (!signRes.uploadUrl) {
+                    throw new Error(`Failed to get signed URL for ${file.name}`);
+                }
+
+                // 2. Upload to Signed URL
+                const uploadRes = await fetch(signRes.uploadUrl, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': file.type || 'application/octet-stream' },
+                    body: file
+                });
+
+                if (!uploadRes.ok) {
+                    throw new Error(`Failed to upload ${file.name}`);
+                }
+                successCount++;
+            }
+            return successCount;
+        },
+        onSuccess: (count) => {
+            if (count && count > 0) {
+                toast.success(`Uploaded ${count} files successfully`);
+                queryClient.invalidateQueries({ queryKey: ['storage-files', bucketName] });
+            }
+        },
+        onError: (error: any) => {
+            console.error("Upload error:", error);
+            toast.error(error.message || "Upload failed");
         }
-    }, [apiKey, bucketName]);
+    });
 
-
-    useEffect(() => {
-        if (bucketName) {
-            fetchFiles();
-        } else {
-            setFiles([]);
+    const { mutate: deleteFile } = useMutation({
+        mutationFn: async (fileId: string) => {
+            await api.storage.deleteFile(apiKey, fileId);
+            return fileId;
+        },
+        onSuccess: (fileId) => {
+            toast.success("File deleted");
+            queryClient.invalidateQueries({ queryKey: ['storage-files', bucketName] });
+            if (selectedFile?.id === fileId) {
+                setIsDrawerOpen(false);
+                setSelectedFile(null);
+            }
+        },
+        onError: (error: any) => {
+            toast.error("Failed to delete file");
         }
-    }, [bucketName, fetchFiles]);
+    });
 
     const handleDrag = function (e: React.DragEvent) {
         e.preventDefault();
@@ -100,66 +147,13 @@ export function FileBrowser({ apiKey, bucketName, onRefreshNeeded }: FileBrowser
         }
     };
 
-    const handleUpload = async (fileList: FileList) => {
-        if (!bucketName) return;
-
-        setUploading(true);
-        let successCount = 0;
-
-        try {
-            for (let i = 0; i < fileList.length; i++) {
-                const file = fileList[i];
-
-                // 1. Get Signed URL
-                const signRes = await api.storage.getUploadUrl(apiKey, {
-                    bucketName,
-                    filename: file.name,
-                    contentType: file.type || 'application/octet-stream',
-                    size: file.size
-                });
-
-                if (!signRes.uploadUrl) {
-                    throw new Error(`Failed to get signed URL for ${file.name}`);
-                }
-
-                // 2. Upload to Signed URL
-                const uploadRes = await fetch(signRes.uploadUrl, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': file.type || 'application/octet-stream' },
-                    body: file
-                });
-
-                if (!uploadRes.ok) {
-                    throw new Error(`Failed to upload ${file.name}`);
-                }
-
-                successCount++;
-            }
-
-            if (successCount > 0) {
-                toast.success(`Uploaded ${successCount} files successfully`);
-                fetchFiles();
-                onRefreshNeeded();
-            }
-
-        } catch (error: any) {
-            console.error("Upload error:", error);
-            toast.error(error.message || "Upload failed");
-        } finally {
-            setUploading(false);
-        }
+    const handleUpload = (fileList: FileList) => {
+        uploadFiles(fileList);
     };
 
-    const handleDelete = async (fileId: string) => {
+    const handleDelete = (fileId: string) => {
         if (!confirm("Are you sure you want to delete this file?")) return;
-        try {
-            await api.storage.deleteFile(apiKey, fileId);
-            toast.success("File deleted");
-            setFiles(files.filter(f => f.id !== fileId));
-            onRefreshNeeded();
-        } catch (error) {
-            toast.error("Failed to delete file");
-        }
+        deleteFile(fileId);
     };
 
     const copyUrl = (url: string) => {
@@ -175,9 +169,18 @@ export function FileBrowser({ apiKey, bucketName, onRefreshNeeded }: FileBrowser
 
     if (!bucketName) {
         return (
-            <div className="flex-1 flex flex-col items-center justify-center h-full text-neutral-500 border-2 border-dashed border-white/5 rounded-xl bg-black/20 m-4">
-                <FolderOpen className="w-16 h-16 opacity-20 mb-4" />
-                <p className="text-lg">Select a bucket to view files</p>
+            <div className="flex-1 flex flex-col h-full relative">
+                <div className="md:hidden flex items-center p-4 border-b border-white/5">
+                    <Button variant="ghost" size="icon" className="mr-2 -ml-2 text-neutral-400" onClick={onToggleSidebar}>
+                        <Menu className="w-5 h-5" />
+                    </Button>
+                    <span className="font-semibold">Storage</span>
+                </div>
+
+                <div className="flex-1 flex flex-col items-center justify-center text-neutral-500 border-2 border-dashed border-white/5 rounded-xl bg-black/20 m-4">
+                    <FolderOpen className="w-16 h-16 opacity-20 mb-4" />
+                    <p className="text-lg">Select a bucket to view files</p>
+                </div>
             </div>
         );
     }
@@ -191,10 +194,15 @@ export function FileBrowser({ apiKey, bucketName, onRefreshNeeded }: FileBrowser
             onDrop={handleDrop}
         >
             <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-white flex items-center gap-2">
-                    <FolderOpen className="w-5 h-5 text-orange-500" />
-                    /{bucketName}
-                </h2>
+                <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon" className="md:hidden -ml-2 text-neutral-400" onClick={onToggleSidebar}>
+                        <Menu className="w-5 h-5" />
+                    </Button>
+                    <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                        <FolderOpen className="w-5 h-5 text-orange-500" />
+                        /{bucketName}
+                    </h2>
+                </div>
                 <div>
                     <label htmlFor="file-upload" className="cursor-pointer">
                         <Button variant="default" size="sm" className="bg-white text-black hover:bg-neutral-200 pointer-events-none">
@@ -208,7 +216,7 @@ export function FileBrowser({ apiKey, bucketName, onRefreshNeeded }: FileBrowser
                         multiple
                         className="hidden"
                         onChange={(e) => e.target.files && handleUpload(e.target.files)}
-                        disabled={uploading}
+                        disabled={isUploading}
                     />
                 </div>
             </div>
@@ -223,7 +231,7 @@ export function FileBrowser({ apiKey, bucketName, onRefreshNeeded }: FileBrowser
                 </div>
             )}
 
-            {uploading && (
+            {isUploading && (
                 <div className="absolute top-4 right-4 bg-orange-600 text-white px-4 py-2 rounded shadow-lg z-50 flex items-center gap-2 animate-in slide-in-from-top-2">
                     <Loader2 className="w-4 h-4 animate-spin" />
                     Uploading...
@@ -231,7 +239,7 @@ export function FileBrowser({ apiKey, bucketName, onRefreshNeeded }: FileBrowser
             )}
 
             {/* Files Grid */}
-            {loading ? (
+            {isLoading ? (
                 <div className="flex-1 flex items-center justify-center">
                     <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
                 </div>
@@ -243,7 +251,7 @@ export function FileBrowser({ apiKey, bucketName, onRefreshNeeded }: FileBrowser
                 </div>
             ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 overflow-y-auto pb-20">
-                    {files.map((file) => (
+                    {files.map((file: any) => (
                         <div key={file.id} className="group relative bg-neutral-900 border border-white/5 hover:border-orange-500/50 rounded-xl p-4 transition-all duration-200 hover:shadow-lg hover:shadow-orange-900/10 flex flex-col gap-3"
                             onClick={() => {
                                 setIsDrawerOpen(true);

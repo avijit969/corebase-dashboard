@@ -17,18 +17,37 @@ import { Switch } from '@/components/ui/switch';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface CreateBucketDialogProps {
     apiKey: string;
-    onSuccess: () => void;
+    onSuccess?: () => void;
     children?: React.ReactNode;
 }
 
 export function CreateBucketDialog({ apiKey, onSuccess, children }: CreateBucketDialogProps) {
     const [open, setOpen] = useState(false);
-    const [loading, setLoading] = useState(false);
     const [name, setName] = useState('');
     const [isPublic, setIsPublic] = useState(false);
+    const queryClient = useQueryClient();
+
+    const { mutate: createBucket, isPending } = useMutation({
+        mutationFn: async (data: { name: string; public: boolean }) => {
+            return api.storage.createBucket(apiKey, data);
+        },
+        onSuccess: () => {
+            toast.success(`Bucket '${name}' created successfully`);
+            queryClient.invalidateQueries({ queryKey: ['storage-buckets', apiKey] });
+            setOpen(false);
+            setName('');
+            setIsPublic(false);
+            if (onSuccess) onSuccess();
+        },
+        onError: (error: any) => {
+            console.error(error);
+            toast.error(error.message || "Failed to create bucket");
+        }
+    });
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -44,23 +63,7 @@ export function CreateBucketDialog({ apiKey, onSuccess, children }: CreateBucket
             return;
         }
 
-        try {
-            setLoading(true);
-            await api.storage.createBucket(apiKey, {
-                name,
-                public: isPublic
-            });
-            toast.success(`Bucket '${name}' created successfully`);
-            setOpen(false);
-            setName('');
-            setIsPublic(false);
-            onSuccess();
-        } catch (error: any) {
-            console.error(error);
-            toast.error(error.message || "Failed to create bucket");
-        } finally {
-            setLoading(false);
-        }
+        createBucket({ name, public: isPublic });
     };
 
     return (
@@ -116,10 +119,10 @@ export function CreateBucketDialog({ apiKey, onSuccess, children }: CreateBucket
                         </Button>
                         <Button
                             type="submit"
-                            disabled={loading}
+                            disabled={isPending}
                             className="bg-orange-600 hover:bg-orange-700 text-white"
                         >
-                            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create Bucket"}
+                            {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create Bucket"}
                         </Button>
                     </DialogFooter>
                 </form>

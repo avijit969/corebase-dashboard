@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import {
@@ -9,7 +9,8 @@ import {
     MoreVertical,
     Trash2,
     Globe,
-    Lock
+    Lock,
+    Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,9 +21,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { CreateBucketDialog } from './CreateBucketDialog';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface Bucket {
-    id: string; // or name if name is id
+    id: string;
     name: string;
     public: boolean;
     created_at: string;
@@ -32,62 +34,68 @@ interface BucketSidebarProps {
     apiKey: string;
     selectedBucket: string | null;
     onSelectBucket: (name: string | null) => void;
+    className?: string;
 }
 
-export function BucketSidebar({ apiKey, selectedBucket, onSelectBucket }: BucketSidebarProps) {
-    const [buckets, setBuckets] = useState<Bucket[]>([]);
-    const [loading, setLoading] = useState(false);
+export function BucketSidebar({ apiKey, selectedBucket, onSelectBucket, className }: BucketSidebarProps) {
+    const queryClient = useQueryClient();
 
-    const fetchBuckets = async () => {
-        if (!apiKey) return;
-        try {
-            setLoading(true);
+    const { data: buckets = [], isLoading } = useQuery({
+        queryKey: ['storage-buckets', apiKey],
+        queryFn: async () => {
+            if (!apiKey) return [];
             const res = await api.storage.listBuckets(apiKey);
+            return res.buckets || [];
+        },
+        enabled: !!apiKey
+    });
 
-            setBuckets(res.buckets || []);
-        } catch (error) {
-            console.error(error);
-            toast.error("Failed to load buckets");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchBuckets();
-    }, [apiKey]);
-
-    const handleDeleteBucket = async (name: string, e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (!confirm(`Are you sure you want to delete bucket '${name}'? It must be empty.`)) return;
-
-        try {
+    const { mutate: deleteBucket } = useMutation({
+        mutationFn: async (name: string) => {
             await api.storage.deleteBucket(apiKey, name);
+            return name;
+        },
+        onSuccess: (name) => {
             toast.success(`Bucket '${name}' deleted`);
-            setBuckets(buckets.filter(b => b.name !== name));
+            queryClient.invalidateQueries({ queryKey: ['storage-buckets', apiKey] });
             if (selectedBucket === name) {
                 onSelectBucket(null);
             }
-        } catch (error: any) {
+        },
+        onError: (error: any) => {
             toast.error(error.message || "Failed to delete bucket");
         }
-    };
+    });
 
-    const handleEmptyBucket = async (name: string) => {
-        if (!confirm(`Are you sure you want to empty bucket '${name}'? This will delete all files.`)) return;
-        try {
+    const { mutate: emptyBucket } = useMutation({
+        mutationFn: async (name: string) => {
             await api.storage.emptyBucket(apiKey, name);
+            return name;
+        },
+        onSuccess: (name) => {
             toast.success(`Bucket '${name}' emptied`);
-        } catch (error: any) {
+        },
+        onError: (error: any) => {
             toast.error(error.message || "Failed to empty bucket");
         }
+    });
+
+    const handleDeleteBucket = (name: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!confirm(`Are you sure you want to delete bucket '${name}'? It must be empty.`)) return;
+        deleteBucket(name);
+    };
+
+    const handleEmptyBucket = (name: string) => {
+        if (!confirm(`Are you sure you want to empty bucket '${name}'? This will delete all files.`)) return;
+        emptyBucket(name);
     };
 
     return (
-        <div className="w-64 border-r border-white/10 flex flex-col h-full bg-black/20">
+        <div className={cn("w-64 border-r border-white/10 flex flex-col h-full bg-black/20", className)}>
             <div className="p-4 border-b border-white/5 flex items-center justify-between">
                 <span className="text-sm font-semibold text-neutral-400 uppercase tracking-wider">Buckets</span>
-                <CreateBucketDialog apiKey={apiKey} onSuccess={fetchBuckets}>
+                <CreateBucketDialog apiKey={apiKey}>
                     <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-400 hover:text-white">
                         <Plus className="w-4 h-4" />
                     </Button>
@@ -95,7 +103,13 @@ export function BucketSidebar({ apiKey, selectedBucket, onSelectBucket }: Bucket
             </div>
 
             <div className="flex-1 overflow-y-auto p-2 space-y-1">
-                {buckets.map((bucket) => (
+                {isLoading && (
+                    <div className="flex justify-center p-4">
+                        <Loader2 className="w-4 h-4 text-orange-500 animate-spin" />
+                    </div>
+                )}
+
+                {!isLoading && buckets.map((bucket: Bucket) => (
                     <div
                         key={bucket.name}
                         onClick={() => onSelectBucket(bucket.name)}
@@ -123,7 +137,7 @@ export function BucketSidebar({ apiKey, selectedBucket, onSelectBucket }: Bucket
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    className="h-6 w-6 lg:opacity-0 group-hover:opacity-100 transition-opacity"
                                     onClick={(e) => e.stopPropagation()}
                                 >
                                     <MoreVertical className="w-3 h-3" />
@@ -145,7 +159,7 @@ export function BucketSidebar({ apiKey, selectedBucket, onSelectBucket }: Bucket
                     </div>
                 ))}
 
-                {buckets.length === 0 && !loading && (
+                {!isLoading && buckets.length === 0 && (
                     <div className="p-4 text-center text-xs text-neutral-600">
                         No buckets found. Create one to get started.
                     </div>
