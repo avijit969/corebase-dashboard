@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Layers, LogOut, Settings, User, Database, Users, ChevronDown, Plus, Folder } from 'lucide-react';
+import { Layers, LogOut, Settings, User, Database, Users, ChevronDown, Plus, Folder, Shield, Table } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -213,15 +213,19 @@ function SidebarContent({ projects, currentProject, isProjectView, projectId, ro
                             <>
                                 <NavLink
                                     href={`/platform/projects/${projectId}`}
-                                    active={pathname === `/platform/projects/${projectId}` || pathname?.includes(`/platform/projects/${projectId}/tables/`)}
+                                    active={pathname === `/platform/projects/${projectId}`}
                                     icon={<Database className="w-4 h-4" />}
                                 >Database</NavLink>
+                                <NavLink
+                                    href={`/platform/projects/${projectId}/authentication/users`}
+                                    active={pathname?.includes(`/platform/projects/${projectId}/authentication`)}
+                                    icon={<Shield className="w-4 h-4" />}
+                                >Authentication</NavLink>
                                 <NavLink
                                     href={`/platform/projects/${projectId}/storage`}
                                     active={pathname?.includes(`/platform/projects/${projectId}/storage`)}
                                     icon={<Folder className="w-4 h-4" />}
                                 >Storage</NavLink>
-                                <NavLink href={`/platform/projects/${projectId}/users`} icon={<Users className="w-4 h-4" />}>Users</NavLink>
                                 <NavLink href={`/platform/projects/${projectId}/settings`} icon={<Settings className="w-4 h-4" />}>Settings</NavLink>
                             </>
                         )}

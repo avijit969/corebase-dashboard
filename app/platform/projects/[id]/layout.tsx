@@ -1,18 +1,14 @@
 "use client";
 
 import React, { useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { api } from '@/lib/api';
 import { useProjectStore } from '@/lib/stores/project-store';
-import { ProjectSidebar } from './_components/ProjectSidebar';
-import { toast } from 'sonner';
 
 export default function ProjectLayout({ children }: { children: React.ReactNode }) {
     const params = useParams();
-    const router = useRouter();
     const id = params?.id as string;
     const setApiKey = useProjectStore(state => state.setApiKey);
-    const [activeTab, setActiveTab] = React.useState<'overview' | 'users' | 'settings'>('overview');
 
     useEffect(() => {
         const fetchProject = async () => {
@@ -35,8 +31,10 @@ export default function ProjectLayout({ children }: { children: React.ReactNode 
     }, [id, setApiKey]);
 
     return (
-        <>
-            {children}
-        </>
+        <div className="flex h-screen bg-neutral-950 text-white overflow-hidden">
+            <main className="flex-1 overflow-auto p-8 relative z-10">
+                {children}
+            </main>
+        </div>
     );
 }

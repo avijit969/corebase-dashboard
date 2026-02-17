@@ -98,6 +98,28 @@ export const api = {
             });
             return handleResponse(res);
         },
+        update: async (id: string, token: string, data: any): Promise<any> => {
+            const res = await fetch(`${API_BASE_URL}/projects/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(data),
+            });
+            return handleResponse(res);
+        },
+        updateAuthConfig: async (projectId: string, token: string, config: any): Promise<any> => {
+            const res = await fetch(`${API_BASE_URL}/auth/project/auth/config?projectId=${projectId}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(config),
+            });
+            return handleResponse(res);
+        },
         getUsers: async (id: string, token: string): Promise<any> => {
             const res = await fetch(`${API_BASE_URL}/projects/${id}/users`, {
                 method: "GET",

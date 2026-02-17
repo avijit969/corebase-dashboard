@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
-import { ProjectUsers } from '../_components/ProjectUsers';
-import { ProjectUser } from '../types';
+import { ProjectUsers } from '../../_components/ProjectUsers';
+import { ProjectUser } from '../../types';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ProjectUsersPage() {
@@ -43,7 +43,7 @@ export default function ProjectUsersPage() {
 
     if (loading) {
         return (
-            <div className="space-y-6 p-4">
+            <div className="space-y-6 pt-4">
                 <Skeleton className="h-8 w-32 bg-white/10" />
                 <div className="border border-white/10 rounded-lg p-4 bg-neutral-900/50">
                     <div className="space-y-4">
@@ -58,7 +58,8 @@ export default function ProjectUsersPage() {
     }
 
     return (
-        <div className="space-y-6 p-4">
+        <div className="space-y-6 pt-4">
+            {/* Header removed from here as it might be in layout or handled differently, but kept for now */}
             <h2 className="text-2xl font-bold text-white">Users</h2>
             <ProjectUsers users={users} />
         </div>

@@ -314,6 +314,71 @@ Login a user to get a User Session Token.
 }
 ```
 
+
+### Configure OAuth Providers
+Set up Google and GitHub credentials for the project.
+*   **Endpoint**: `POST /v1/auth/project/auth/config?projectId=<projectId>`
+*   **Query Param**: `projectId` (Required)
+*   **Auth**: `Authorization: Bearer <platform_token>` (Recommended)
+
+**Request Body:**
+```json
+{
+  "google_client_id": "...",
+  "google_client_secret": "...",
+  "github_client_id": "...",
+  "github_client_secret": "..."
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": {
+    "message": "Configuration updated successfully"
+  }
+}
+```
+
+### Get OAuth Configuration
+Get the current OAuth credentials (masked).
+*   **Endpoint**: `GET /v1/auth/project/auth/config?projectId=<projectId>`
+*   **Query Param**: `projectId` (Required)
+*   **Auth**: `Authorization: Bearer <platform_token>`
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": {
+    "google_client_id": "...",
+    "google_client_secret": "masked",
+    "github_client_id": "...",
+    "github_client_secret": "masked"
+  }
+}
+```
+
+### OAuth Login (Redirect)
+Initiate OAuth login flow. Redirect the user to this URL.
+*   **Endpoint**: `GET /v1/auth/project/auth/:provider?projectId=<projectId>`
+*   **Providers**: `google`, `github`
+*   **Query Param**: `projectId` (Required)
+
+**Response:**
+*   **302 Redirect**: Redirects to the provider's consent page.
+*   **Cookies**: Sets `oauth_state`, `oauth_code_verifier` (PKCE) cookies.
+
+### OAuth Callback
+Handle the callback from the provider.
+*   **Endpoint**: `GET /v1/auth/project/auth/:provider/callback`
+*   **Query Params**: `code`, `state` (from provider)
+
+**Response:**
+*   **302 Redirect**: Redirects to the frontend application with tokens in URL fragment/query.
+    *   Example: `/?access_token=...&refresh_token=...&user_id=...`
+
 ---
 
 ## 4. Database Schema Management
@@ -872,5 +937,131 @@ All errors follow this format:
     "code": "ERROR_CODE",
     "details": "..."
   }
+}
+```
+
+---
+
+## 7. Realtime (WebSocket)
+*Subscribe to real-time database updates.*
+*Requires `x-api-key` header to identify the project and initial Auth.*
+
+### Connection
+
+*   **Endpoint**: `/v1/realtime`
+*   **Protocol**: WebSocket (WS/WSS)
+
+#### Authentication
+The WebSocket endpoint is protected by the application's global authentication and project middleware.
+*   **Handshake**: The initial HTTP Upgrade request must pass the `authMiddleware`.
+    *   **Headers**: `x-api-key: <project_api_key>`
+    *   **Cookie** or **Authorization**: Valid session/token.
+
+### Message Protocol
+
+The communication uses JSON-encoded messages for both commands and data events.
+
+#### Client Messages
+
+**1. Subscribe**
+
+Subscribe to a live query. You will immediately receive the current result set. Future updates are sent automatically whenever the target data changes.
+
+```json
+{
+  "type": "subscribe",
+  "id": "my-sub-001",
+  "query": {
+    "from": "products",
+    "select": ["id", "name", "price", "category_id"],
+    "where": {
+      "price": { "lt": 100 }
+    },
+    "limit": 50,
+    "join": [
+      {
+        "table": "categories",
+        "on": { "products.category_id": "categories.id" },
+        "select": ["name"]
+      }
+    ]
+  }
+}
+```
+
+*   **`id`**: A unique string identifier for this subscription (controlled by the client).
+*   **`query`**: The query definition object (see below).
+
+**2. Unsubscribe**
+
+Stop receiving updates for a specific subscription.
+
+```json
+{
+  "type": "unsubscribe",
+  "id": "my-sub-001"
+}
+```
+
+#### Server Messages
+
+**Data Update**
+
+Sent when a subscription is initialized or when a relevant database change is detected.
+
+```json
+{
+  "type": "data",
+  "id": "my-sub-001",
+  "data": [
+    {
+      "id": 1,
+      "name": "Widget A",
+      "price": 99.99,
+      "category_id": 10,
+      "categories": {
+        "name": "Widgets"
+      }
+    }
+  ]
+}
+```
+
+*   **`id`**: Matches the subscription ID provided by the client.
+*   **`data`**: An array of result rows.
+
+### Query Structure
+
+The `query` object defines the shape of the data subscription.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `from` | `string` | **Required**. The name of the primary table to query. |
+| `select` | `string[]` \| `"*"` | Array of column names to retrieve. defaults to `*`. |
+| `where` | `object` | Filter conditions (see below) implicitly ANDed. |
+| `limit` | `number` | Maximum number of rows to return. |
+| `orderBy`| `string` | Column name to sort by. |
+| `order` | `"ASC"` \| `"DESC"` | Sort direction. |
+| `join` | `array` | List of join definitions for related data. |
+
+#### Filters (`where`)
+The `where` clause supports exact matches and operator-based conditions.
+
+*   **Equality**: `{ "status": "active" }`
+*   **Operators**:
+    *   `eq`: Equal `{ "id": { "eq": 5 } }`
+    *   `gt`: Greater than `{ "score": { "gt": 80 } }`
+    *   `lt`: Less than `{ "price": { "lt": 20 } }`
+    *   `in`: In list `{ "status": { "in": ["pending", "processing"] } }`
+
+#### Joins
+Supports purely defined left joins to safe identifiers. Recursive joins are supported up to a max depth (default 3).
+
+```typescript
+interface QueryJoin {
+    table: string;
+    on: Record<string, string>; // e.g., { "table1.col": "table2.col" }
+    select?: string[];
+    join?: QueryJoin[];
 }
 ```
