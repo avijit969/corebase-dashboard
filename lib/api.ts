@@ -120,7 +120,8 @@ export const api = {
             });
             return handleResponse(res);
         },
-        getUsers: async (id: string, token: string): Promise<any> => {
+        getUsers: async (id: string): Promise<any> => {
+            const token = localStorage.getItem("platform_token");
             const res = await fetch(`${API_BASE_URL}/projects/${id}/users`, {
                 method: "GET",
                 headers: {

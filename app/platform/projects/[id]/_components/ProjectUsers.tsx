@@ -3,27 +3,37 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { Users, MoreHorizontal } from 'lucide-react';
+import { Users, MoreHorizontal, RefreshCw } from 'lucide-react';
 import { ProjectUser } from '../types';
 
 interface ProjectUsersProps {
     users: ProjectUser[];
+    refetch: () => void;
 }
 
-export function ProjectUsers({ users }: ProjectUsersProps) {
+export function ProjectUsers({ users, refetch }: ProjectUsersProps) {
     return (
         <Card className="bg-neutral-900/50 border-white/10 text-white backdrop-blur-sm animate-in fade-in duration-500">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <Users className="w-5 h-5 text-orange-400" />
                     Project Users
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => refetch()}
+                        className="ml-auto"
+                    >
+                        <RefreshCw className="w-4 h-4 mr-2" />
+                        Refresh
+                    </Button>
                 </CardTitle>
                 <CardDescription className="text-gray-400">
                     End-users registered to your application.
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                {users.length > 0 ? (
+                {users?.length > 0 ? (
                     <div className="border border-white/10 rounded-lg overflow-hidden">
                         <Table>
                             <TableHeader className="bg-white/5">
@@ -36,7 +46,7 @@ export function ProjectUsers({ users }: ProjectUsersProps) {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {users.map((user) => (
+                                {users?.map((user) => (
                                     <TableRow key={user.id} className="border-white/10 hover:bg-white/5">
                                         <TableCell className="font-medium text-white">
                                             <div className="flex items-center gap-3">

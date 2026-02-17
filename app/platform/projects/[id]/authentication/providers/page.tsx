@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { toast } from 'sonner';
 import { Github, Globe, Key } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
+import { useQuery } from '@tanstack/react-query';
 
 interface ProviderConfig {
     enabled: boolean;
@@ -34,40 +35,43 @@ export default function ProvidersPage() {
     });
 
     const [loading, setLoading] = useState(false);
-    const [projectLoading, setProjectLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchSettings = async () => {
-            const token = localStorage.getItem("platform_token");
-            if (!token || !id) return;
-            try {
-                const data = await api.projects.get(id, token);
-                if (data?.meta) {
-                    setProviders(prev => ({
-                        ...prev,
-                        google: {
-                            ...prev.google,
-                            enabled: !!data.meta.google_client_id,
-                            clientId: data.meta.google_client_id || '',
-                            clientSecret: data.meta.google_client_secret || ''
-                        },
-                        github: {
-                            ...prev.github,
-                            enabled: !!data.meta.github_client_id,
-                            clientId: data.meta.github_client_id || '',
-                            clientSecret: data.meta.github_client_secret || ''
-                        }
-                    }));
+    const fetchSettings = async () => {
+        const token = localStorage.getItem("platform_token");
+        if (!token || !id) return;
+        try {
+            const data = await api.projects.get(id, token);
+            if (data?.meta) {
+                return {
+                    google: {
+                        enabled: !!data.meta.google_client_id,
+                        clientId: data.meta.google_client_id || '',
+                        clientSecret: data.meta.google_client_secret || ''
+                    },
+                    github: {
+                        enabled: !!data.meta.github_client_id,
+                        clientId: data.meta.github_client_id || '',
+                        clientSecret: data.meta.github_client_secret || ''
+                    }
                 }
-            } catch (error) {
-                console.error("Failed to fetch provider settings", error);
-            } finally {
-                setProjectLoading(false);
             }
-        };
-        fetchSettings();
-    }, [id]);
-
+        } catch (error) {
+            console.error("Failed to fetch provider settings", error);
+            return {
+                google: { enabled: false, clientId: '', clientSecret: '' },
+                github: { enabled: false, clientId: '', clientSecret: '' },
+            }
+        }
+    };
+    const { refetch, data, isLoading: projectLoading } = useQuery({
+        queryKey: ['project', id],
+        queryFn: fetchSettings,
+        enabled: !!id,
+    })
+    useEffect(() => {
+        if (data) {
+            setProviders(data);
+        }
+    }, [data]);
     const handleToggle = (provider: keyof ProvidersState) => {
         setProviders(prev => ({
             ...prev,
