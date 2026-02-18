@@ -2,15 +2,15 @@
 
 import React, { useEffect, useState } from "react";
 import {
-    Drawer,
-    DrawerContent,
-    DrawerDescription,
-    DrawerFooter,
-    DrawerHeader,
-    DrawerTitle,
-    DrawerTrigger,
-    DrawerClose,
-} from "@/components/ui/drawer";
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+    SheetClose,
+} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -243,22 +243,22 @@ export function CreateTableDrawer({
     };
 
     return (
-        <Drawer open={open} onOpenChange={setOpen}>
-            <DrawerTrigger asChild>{children}</DrawerTrigger>
+        <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>{children}</SheetTrigger>
 
-            <DrawerContent className="bg-neutral-950 text-white h-[95vh] rounded-t-2xl border-t border-white/10 outline-none">
-                <div className="mx-auto w-full max-w-5xl h-full flex flex-col">
-                    <DrawerHeader className="border-b border-white/5 pb-6">
+            <SheetContent side="right" className="bg-neutral-950 text-white w-full sm:max-w-xl md:max-w-2xl lg:max-w-3xl flex flex-col p-0 border-l border-white/10 outline-none">
+                <div className="h-full flex flex-col">
+                    <SheetHeader className="border-b border-white/5 p-6">
                         <div className="flex items-center gap-3 mb-2">
                             <div className="p-2 bg-primary-500/10 rounded-lg">
                                 <TableProperties className="w-5 h-5 text-primary-500" />
                             </div>
-                            <DrawerTitle className="text-2xl font-semibold tracking-tight">Create New Table</DrawerTitle>
+                            <SheetTitle className="text-2xl font-semibold tracking-tight">Create New Table</SheetTitle>
                         </div>
-                        <DrawerDescription className="text-neutral-400 text-base">
+                        <SheetDescription className="text-neutral-400 text-base">
                             Design your data structure by defining columns, types, and relationships.
-                        </DrawerDescription>
-                    </DrawerHeader>
+                        </SheetDescription>
+                    </SheetHeader>
 
                     <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
                         <form id="create-table-form" onSubmit={handleSubmit} className="space-y-8">
@@ -470,11 +470,11 @@ export function CreateTableDrawer({
                         </form>
                     </div>
 
-                    <DrawerFooter className="border-t border-white/5 pt-6 pb-8 bg-neutral-950/80 backdrop-blur-sm">
+                    <SheetFooter className="border-t border-white/5 pt-6 pb-8 bg-neutral-950/80 backdrop-blur-sm p-6">
                         <div className="flex items-center justify-end gap-3 w-full max-w-5xl mx-auto">
-                            <DrawerClose asChild>
+                            <SheetClose asChild>
                                 <Button variant="ghost" className="text-neutral-400 hover:text-white hover:bg-white/5">Cancel</Button>
-                            </DrawerClose>
+                            </SheetClose>
                             <Button
                                 type="submit"
                                 form="create-table-form"
@@ -489,9 +489,9 @@ export function CreateTableDrawer({
                                 {loading ? "Creating..." : "Create Table"}
                             </Button>
                         </div>
-                    </DrawerFooter>
+                    </SheetFooter>
                 </div>
-            </DrawerContent>
-        </Drawer>
+            </SheetContent>
+        </Sheet>
     );
 }

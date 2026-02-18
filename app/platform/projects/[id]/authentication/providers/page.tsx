@@ -147,7 +147,7 @@ export default function ProvidersPage() {
                             onCheckedChange={() => handleToggle('google')}
                         />
                     </CardHeader>
-                    {providers.google.enabled && (
+                    {providers?.google?.enabled && (
                         <CardContent className="space-y-4 pt-4 animate-in slide-in-from-top-2 duration-200">
                             <div className="grid gap-2">
                                 <Label htmlFor="google-client-id" className="text-gray-300">Client ID</Label>
@@ -199,7 +199,7 @@ export default function ProvidersPage() {
                             className='bg-primary-600'
                         />
                     </CardHeader>
-                    {providers.github.enabled && (
+                    {providers?.github?.enabled && (
                         <CardContent className="space-y-4 pt-4 animate-in slide-in-from-top-2 duration-200">
                             <div className="grid gap-2">
                                 <Label htmlFor="github-client-id" className="text-gray-300">Client ID</Label>

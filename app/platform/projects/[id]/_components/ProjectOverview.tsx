@@ -21,7 +21,7 @@ interface ProjectOverviewProps {
 }
 
 export function ProjectOverview({ project, copyToClipboard, refreshProject }: ProjectOverviewProps) {
-    const createdDate = project.meta.created_at ? new Date(project.meta.created_at).toLocaleDateString() : 'N/A';
+    const createdDate = project?.meta?.created_at ? new Date(project.meta.created_at).toLocaleDateString() : 'N/A';
 
     const handleCopy = (text: string) => {
         copyToClipboard(text);

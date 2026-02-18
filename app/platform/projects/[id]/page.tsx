@@ -50,7 +50,7 @@ export default function ProjectOverviewPage() {
         <div className="space-y-6 p-4">
             <h2 className="text-2xl font-bold text-white">Database Overview</h2>
             <ProjectOverview
-                project={project}
+                project={project || {}}
                 copyToClipboard={copyToClipboard}
                 refreshProject={() => refetch()}
             />
