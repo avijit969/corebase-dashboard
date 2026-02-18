@@ -199,7 +199,7 @@ export function FileBrowser({ apiKey, bucketName, onToggleSidebar }: FileBrowser
                         <Menu className="w-5 h-5" />
                     </Button>
                     <h2 className="text-xl font-semibold text-white flex items-center gap-2">
-                        <FolderOpen className="w-5 h-5 text-orange-500" />
+                        <FolderOpen className="w-5 h-5 text-primary-500" />
                         /{bucketName}
                     </h2>
                 </div>
@@ -223,8 +223,8 @@ export function FileBrowser({ apiKey, bucketName, onToggleSidebar }: FileBrowser
 
             {/* Drag Overlay */}
             {dragActive && (
-                <div className="absolute inset-0 bg-orange-500/10 border-2 border-orange-500 border-dashed rounded-xl z-50 flex items-center justify-center backdrop-blur-sm transition-all duration-200 m-4">
-                    <div className="text-orange-500 font-medium text-xl animate-pulse flex flex-col items-center gap-4">
+                <div className="absolute inset-0 bg-primary-500/10 border-2 border-primary-500 border-dashed rounded-xl z-50 flex items-center justify-center backdrop-blur-sm transition-all duration-200 m-4">
+                    <div className="text-primary-500 font-medium text-xl animate-pulse flex flex-col items-center gap-4">
                         <UploadCloud className="w-16 h-16" />
                         Drop files to upload
                     </div>
@@ -232,7 +232,7 @@ export function FileBrowser({ apiKey, bucketName, onToggleSidebar }: FileBrowser
             )}
 
             {isUploading && (
-                <div className="absolute top-4 right-4 bg-orange-600 text-white px-4 py-2 rounded shadow-lg z-50 flex items-center gap-2 animate-in slide-in-from-top-2">
+                <div className="absolute top-4 right-4 bg-primary-600 text-white px-4 py-2 rounded shadow-lg z-50 flex items-center gap-2 animate-in slide-in-from-top-2">
                     <Loader2 className="w-4 h-4 animate-spin" />
                     Uploading...
                 </div>
@@ -241,7 +241,7 @@ export function FileBrowser({ apiKey, bucketName, onToggleSidebar }: FileBrowser
             {/* Files Grid */}
             {isLoading ? (
                 <div className="flex-1 flex items-center justify-center">
-                    <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
+                    <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
                 </div>
             ) : files.length === 0 ? (
                 <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-xl bg-black/20 text-neutral-400">
@@ -252,7 +252,7 @@ export function FileBrowser({ apiKey, bucketName, onToggleSidebar }: FileBrowser
             ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 overflow-y-auto pb-20">
                     {files.map((file: any) => (
-                        <div key={file.id} className="group relative bg-neutral-900 border border-white/5 hover:border-orange-500/50 rounded-xl p-4 transition-all duration-200 hover:shadow-lg hover:shadow-orange-900/10 flex flex-col gap-3"
+                        <div key={file.id} className="group relative bg-neutral-900 border border-white/5 hover:border-primary-500/50 rounded-xl p-4 transition-all duration-200 hover:shadow-lg hover:shadow-primary-900/10 flex flex-col gap-3"
                             onClick={() => {
                                 setIsDrawerOpen(true);
                                 setSelectedFile(file)

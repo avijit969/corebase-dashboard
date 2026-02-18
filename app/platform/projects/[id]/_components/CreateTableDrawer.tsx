@@ -250,8 +250,8 @@ export function CreateTableDrawer({
                 <div className="mx-auto w-full max-w-5xl h-full flex flex-col">
                     <DrawerHeader className="border-b border-white/5 pb-6">
                         <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2 bg-orange-500/10 rounded-lg">
-                                <TableProperties className="w-5 h-5 text-orange-500" />
+                            <div className="p-2 bg-primary-500/10 rounded-lg">
+                                <TableProperties className="w-5 h-5 text-primary-500" />
                             </div>
                             <DrawerTitle className="text-2xl font-semibold tracking-tight">Create New Table</DrawerTitle>
                         </div>
@@ -265,10 +265,10 @@ export function CreateTableDrawer({
                             {/* General Section */}
                             <div className="space-y-4">
                                 <div className="flex items-center gap-2 text-sm font-medium text-neutral-300">
-                                    <Database className="w-4 h-4 text-orange-500" />
+                                    <Database className="w-4 h-4 text-primary-500" />
                                     <span className="uppercase tracking-wider text-xs">Table Configuration</span>
                                 </div>
-                                <div className="bg-neutral-900/50 border border-white/10 rounded-xl p-1.5 focus-within:ring-2 focus-within:ring-orange-500/20 focus-within:border-orange-500/50 transition-all">
+                                <div className="bg-neutral-900/50 border border-white/10 rounded-xl p-1.5 focus-within:ring-2 focus-within:ring-primary-500/20 focus-within:border-primary-500/50 transition-all">
                                     <Input
                                         value={tableName}
                                         onChange={(e) => setTableName(e.target.value)}
@@ -283,7 +283,7 @@ export function CreateTableDrawer({
                             <div className="space-y-5">
                                 <div className="flex items-center justify-between sticky top-0 z-10 bg-neutral-950/80 backdrop-blur-sm py-2">
                                     <div className="flex items-center gap-2 text-sm font-medium text-neutral-300">
-                                        <Settings2 className="w-4 h-4 text-orange-500" />
+                                        <Settings2 className="w-4 h-4 text-primary-500" />
                                         <span className="uppercase tracking-wider text-xs">Schema Definition</span>
                                         <span className="bg-white/10 text-xs px-2 py-0.5 rounded-full text-neutral-400">{columns.length} columns</span>
                                     </div>
@@ -292,7 +292,7 @@ export function CreateTableDrawer({
                                         onClick={addColumn}
                                         variant="outline"
                                         size="sm"
-                                        className="h-8 border-orange-500/20 text-orange-500 hover:text-orange-400 hover:bg-orange-500/10 hover:border-orange-500/30 transition-all"
+                                        className="h-8 border-primary-500/20 text-primary-500 hover:text-primary-400 hover:bg-primary-500/10 hover:border-primary-500/30 transition-all"
                                     >
                                         <Plus className="w-3.5 h-3.5 mr-1.5" />
                                         Add Column
@@ -321,7 +321,7 @@ export function CreateTableDrawer({
                                                                     placeholder="Column Name"
                                                                     value={c.name}
                                                                     onChange={(e) => updateColumn(i, "name", e.target.value)}
-                                                                    className="pl-9 bg-black/20 border-white/5 h-10 focus-visible:ring-1 focus-visible:ring-orange-500/50 hover:bg-black/30 transition-colors placeholder:text-neutral-600"
+                                                                    className="pl-9 bg-black/20 border-white/5 h-10 focus-visible:ring-1 focus-visible:ring-primary-500/50 hover:bg-black/30 transition-colors placeholder:text-neutral-600"
                                                                 />
                                                             </div>
                                                         </div>
@@ -344,7 +344,7 @@ export function CreateTableDrawer({
                                                                         "json",
                                                                         "datetime",
                                                                     ].map((t) => (
-                                                                        <SelectItem key={t} value={t} className="text-neutral-300 focus:bg-orange-500/10 focus:text-orange-500 cursor-pointer">
+                                                                        <SelectItem key={t} value={t} className="text-neutral-300 focus:bg-primary-500/10 focus:text-primary-500 cursor-pointer">
                                                                             {t}
                                                                         </SelectItem>
                                                                     ))}
@@ -370,7 +370,7 @@ export function CreateTableDrawer({
                                                                     id={`primary-${i}`}
                                                                     checked={c.primary}
                                                                     onCheckedChange={(checked) => updateColumn(i, "primary", checked === true)}
-                                                                    className="border-white/20 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500"
+                                                                    className="border-white/20 data-[state=checked]:bg-primary-500 data-[state=checked]:border-primary-500"
                                                                 />
                                                                 <Label
                                                                     htmlFor={`primary-${i}`}
@@ -384,7 +384,7 @@ export function CreateTableDrawer({
                                                                     id={`notNull-${i}`}
                                                                     checked={c.notNull}
                                                                     onCheckedChange={(checked) => updateColumn(i, "notNull", checked === true)}
-                                                                    className="border-white/20 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500"
+                                                                    className="border-white/20 data-[state=checked]:bg-primary-500 data-[state=checked]:border-primary-500"
                                                                 />
                                                                 <Label
                                                                     htmlFor={`notNull-${i}`}
@@ -479,7 +479,7 @@ export function CreateTableDrawer({
                                 type="submit"
                                 form="create-table-form"
                                 disabled={loading}
-                                className="bg-orange-600 hover:bg-orange-500 text-white min-w-[140px]"
+                                className="bg-primary-600 hover:bg-primary-500 text-white min-w-[140px]"
                             >
                                 {loading ? (
                                     <Loader2 className="animate-spin w-4 h-4 mr-2" />

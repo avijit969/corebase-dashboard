@@ -104,6 +104,7 @@ export default function ProvidersPage() {
             });
 
             toast.success("Providers configuration saved successfully");
+            refetch();
         } catch (error) {
             console.error("Failed to save providers", error);
             toast.error("Failed to save configuration");
@@ -195,6 +196,7 @@ export default function ProvidersPage() {
                         <Switch
                             checked={providers.github.enabled}
                             onCheckedChange={() => handleToggle('github')}
+                            className='bg-primary-600'
                         />
                     </CardHeader>
                     {providers.github.enabled && (

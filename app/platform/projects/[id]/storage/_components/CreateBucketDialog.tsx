@@ -104,7 +104,7 @@ export function CreateBucketDialog({ apiKey, onSuccess, children }: CreateBucket
                         <Switch
                             checked={isPublic}
                             onCheckedChange={setIsPublic}
-                            className="data-[state=checked]:bg-orange-600"
+                            className="data-[state=checked]:bg-primary-600"
                         />
                     </div>
 
@@ -120,7 +120,7 @@ export function CreateBucketDialog({ apiKey, onSuccess, children }: CreateBucket
                         <Button
                             type="submit"
                             disabled={isPending}
-                            className="bg-orange-600 hover:bg-orange-700 text-white"
+                            className="bg-primary-600 hover:bg-primary-700 text-white"
                         >
                             {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create Bucket"}
                         </Button>

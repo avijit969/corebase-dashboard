@@ -44,7 +44,7 @@ export default function AuthenticationLayout({ children }: { children: React.Rea
                                 {isActive && (
                                     <motion.div
                                         layoutId="activeAuthTab"
-                                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500"
+                                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-500"
                                     />
                                 )}
                             </button>

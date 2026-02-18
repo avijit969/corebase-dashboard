@@ -190,13 +190,13 @@ export default function ProjectsPage() {
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
                         <Input
                             placeholder="Search projects..."
-                            className="pl-9 bg-black/20 border-white/10 text-white placeholder:text-gray-500 focus-visible:ring-purple-500"
+                            className="pl-9 bg-black/20 border-white/10 text-white placeholder:text-gray-500 focus-visible:ring-primary-500"
                         />
                     </div>
 
                     <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                         <DialogTrigger asChild>
-                            <Button className="bg-purple-600 hover:bg-purple-700 text-white gap-2 shadow-lg shadow-purple-900/20 border-0">
+                            <Button className="bg-primary-600 hover:bg-primary-700 text-white gap-2 shadow-lg shadow-primary-900/20 border-0">
                                 <Plus className="w-4 h-4" /> New Project
                             </Button>
                         </DialogTrigger>
@@ -214,14 +214,14 @@ export default function ProjectsPage() {
                                         id="name"
                                         value={newProjectName}
                                         onChange={(e) => setNewProjectName(e.target.value)}
-                                        className="bg-black/50 border-white/20 text-white focus-visible:ring-purple-500"
+                                        className="bg-black/50 border-white/20 text-white focus-visible:ring-primary-500"
                                         placeholder="My Awesome App"
                                         autoFocus
                                     />
                                 </div>
                             </div>
                             <DialogFooter>
-                                <Button onClick={handleCreateProject} disabled={creating} className="bg-purple-600 hover:bg-purple-700 text-white">
+                                <Button onClick={handleCreateProject} disabled={creating} className="bg-primary-600 hover:bg-primary-700 text-white">
                                     {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                     Create Project
                                 </Button>
@@ -240,7 +240,7 @@ export default function ProjectsPage() {
                         transition={{ delay: index * 0.1 }}
                     >
                         <Card
-                            className="bg-black/40 border-white/10 text-white backdrop-blur-sm hover:border-purple-500/50 transition-colors group cursor-pointer relative"
+                            className="bg-black/40 border-white/10 text-white backdrop-blur-sm hover:border-primary-500/50 transition-colors group cursor-pointer relative"
                             onClick={() => {
                                 router.push(`/platform/projects/${project.id}`)
                                 // set project api key in store
@@ -250,7 +250,7 @@ export default function ProjectsPage() {
                             <CardHeader className="flex flex-row items-start justify-between pb-2">
                                 <div className="flex gap-3 items-center">
                                     <div className="w-10 h-10 rounded-lg bg-neutral-800 flex items-center justify-center border border-white/5">
-                                        <Database className="w-5 h-5 text-purple-400" />
+                                        <Database className="w-5 h-5 text-primary-400" />
                                     </div>
                                     <div>
                                         <CardTitle className="text-lg leading-none">{project.name}</CardTitle>
@@ -325,8 +325,8 @@ export default function ProjectsPage() {
                         className="cursor-pointer"
                     >
                         <Card className="bg-white/5 border-dashed border-white/10 text-white h-full flex flex-col items-center justify-center min-h-[220px] hover:bg-white/10 hover:border-white/20 transition-all group">
-                            <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4 group-hover:bg-purple-500/20 group-hover:text-purple-400 transition-colors">
-                                <Plus className="w-6 h-6 text-gray-400 group-hover:text-purple-400" />
+                            <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4 group-hover:bg-primary-500/20 group-hover:text-primary-400 transition-colors">
+                                <Plus className="w-6 h-6 text-gray-400 group-hover:text-primary-400" />
                             </div>
                             <h3 className="text-lg font-medium text-gray-300 group-hover:text-white">New Project</h3>
                             <p className="text-sm text-gray-500 mt-1">Add a new app to your workspace</p>

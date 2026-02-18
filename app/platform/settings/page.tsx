@@ -73,7 +73,7 @@ export default function PlatformSettingsPage() {
                                     </p>
                                 </div>
                                 <div className="flex justify-end">
-                                    <Button type="submit" className="bg-orange-600 hover:bg-orange-700">
+                                    <Button type="submit" className="bg-primary-600 hover:bg-primary-700">
                                         Save Changes
                                     </Button>
                                 </div>

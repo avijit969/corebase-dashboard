@@ -216,7 +216,7 @@ export function CreateTableDialog({ project, onTableCreated, children }: CreateT
 
                     <DialogFooter>
                         <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-                        <Button type="submit" disabled={loading} className="bg-orange-600 hover:bg-orange-700 text-white">
+                        <Button type="submit" disabled={loading} className="bg-primary-600 hover:bg-primary-700 text-white">
                             {loading ? "Creating..." : "Create Table"}
                         </Button>
                     </DialogFooter>

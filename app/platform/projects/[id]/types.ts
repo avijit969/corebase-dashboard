@@ -1,14 +1,12 @@
 export interface ProjectDetails {
     id: string;
     status: string;
-    api_key?: string; // Added for DB access
-    apiKey?: string; // Possible camelCase variant
+    api_key?: string;
     meta: {
         name: string;
         owner_id: string;
         created_at: string;
-        api_key?: string; // Possible location
-        apiKey?: string; // Possible location
+        api_key?: string;
         [key: string]: any;
     };
     tables: Array<{ name: string }>;

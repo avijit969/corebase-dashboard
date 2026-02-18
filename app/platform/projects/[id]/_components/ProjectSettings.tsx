@@ -66,7 +66,7 @@ export function ProjectSettings({ projectName, handleDeleteProject }: ProjectSet
                             </DialogHeader>
                             <div className="flex flex-col gap-4 py-4">
                                 <Label htmlFor="confirm-name" className="text-gray-300">
-                                    Type <span className="font-mono text-orange-400 bg-orange-400/10 px-1 rounded">{projectName}</span> to confirm.
+                                    Type <span className="font-mono text-primary-400 bg-primary-400/10 px-1 rounded">{projectName}</span> to confirm.
                                 </Label>
                                 <Input
                                     id="confirm-name"

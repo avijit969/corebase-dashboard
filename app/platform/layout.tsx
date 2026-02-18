@@ -1,9 +1,9 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Layers, LogOut, Settings, User, Menu } from 'lucide-react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 import { MobileSidebar, PlatformSidebar } from '@/components/PlatformSidebar';
 
@@ -11,14 +11,31 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
     const pathname = usePathname();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const closeSidebar = React.useCallback(() => setSidebarOpen(false), []);
-
+    const [isAuthLoading, setIsAuthLoading] = useState(true);
+    const router = useRouter();
+    // check the user authentication
+    useEffect(() => {
+        const token = localStorage.getItem("platform_token");
+        // todo: check from the backend
+        if (!token) {
+            router.push("/platform/login");
+        }
+        setIsAuthLoading(false);
+    }, [router])
+    if (isAuthLoading) {
+        return (
+            <div className="min-h-screen bg-black text-white flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+            </div>
+        );
+    }
     // Conditionally render layout based on route
     if (pathname?.startsWith('/platform/login') || pathname?.startsWith('/platform/signup')) {
         return (
             <div className="min-h-screen bg-black text-white font-sans overflow-auto relative">
                 {/* Background Gradients for Auth Pages */}
-                <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-orange-600/20 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
-                <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-red-600/20 rounded-full blur-[120px] translate-x-1/2 translate-y-1/2 pointer-events-none" />
+                <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-primary-600/20 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+                <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-primary-600/20 rounded-full blur-[120px] translate-x-1/2 translate-y-1/2 pointer-events-none" />
                 {children}
             </div>
         );
@@ -37,7 +54,7 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
                         <Menu className="w-5 h-5" />
                     </Button>
                     <Link href="/" className="flex items-center gap-2 font-bold text-xl tracking-tighter">
-                        <div className="w-8 h-8 rounded-lg bg-linear-to-br from-orange-500 to-red-500 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-lg bg-linear-to-br from-primary-600 to-primary-500 flex items-center justify-center">
                             <Layers className="w-5 h-5 text-white" />
                         </div>
                         CoreBase

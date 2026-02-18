@@ -1,14 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import { ProjectSettings } from '../_components/ProjectSettings';
 import { ProjectDetails } from '../types';
 import { Skeleton } from '@/components/ui/skeleton';
-
-// ... (rest of imports)
 
 export default function ProjectSettingsPage() {
     const params = useParams();
@@ -20,15 +18,10 @@ export default function ProjectSettingsPage() {
 
     useEffect(() => {
         const token = localStorage.getItem("platform_token");
-        if (!token) {
-            router.push("/platform/login");
-            return;
-        }
-
-        if (id) {
+        if (id && token) {
             fetchProject(id, token);
         }
-    }, [id, router]);
+    }, [id]);
 
     const fetchProject = async (projectId: string, token: string) => {
         try {

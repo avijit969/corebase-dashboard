@@ -52,7 +52,7 @@ export function ProjectOverview({ project, copyToClipboard, refreshProject }: Pr
                     </CardHeader>
                     <CardContent>
                         <div className="flex items-center gap-2">
-                            <TableIcon className="w-5 h-5 text-orange-500" />
+                            <TableIcon className="w-5 h-5 text-primary-500" />
                             <span className="text-2xl font-bold text-white">{project.tables ? project.tables.length : 0}</span>
                         </div>
                     </CardContent>
@@ -76,13 +76,13 @@ export function ProjectOverview({ project, copyToClipboard, refreshProject }: Pr
                 <div className="flex items-center justify-between">
                     <div>
                         <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                            <Database className="w-6 h-6 text-orange-500" />
+                            <Database className="w-6 h-6 text-primary-500" />
                             Database Tables
                         </h2>
                         <p className="text-neutral-400 mt-1">Manage your schema and data content.</p>
                     </div>
                     <CreateTableDrawer project={project} onTableCreated={refreshProject}>
-                        <Button className="bg-orange-600 hover:bg-orange-500 text-white">
+                        <Button className="bg-primary-600 hover:bg-primary-500 text-white">
                             <TableIcon className="w-4 h-4 mr-2" />
                             Create Table
                         </Button>
@@ -92,14 +92,14 @@ export function ProjectOverview({ project, copyToClipboard, refreshProject }: Pr
                 {project.tables && project.tables.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {project.tables.map((table: any, i: number) => (
-                            <Card key={i} className="bg-neutral-900/40 border-white/5 hover:border-orange-500/30 transition-all duration-300 group">
+                            <Card key={i} className="bg-neutral-900/40 border-white/5 hover:border-primary-500/30 transition-all duration-300 group">
                                 <CardHeader className="pb-3">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
-                                            <div className="p-2 rounded-lg bg-white/5 group-hover:bg-orange-500/10 transition-colors">
-                                                <TableIcon className="w-5 h-5 text-neutral-400 group-hover:text-orange-500" />
+                                            <div className="p-2 rounded-lg bg-white/5 group-hover:bg-primary-500/10 transition-colors">
+                                                <TableIcon className="w-5 h-5 text-neutral-400 group-hover:text-primary-500" />
                                             </div>
-                                            <CardTitle className="text-lg font-medium text-white group-hover:text-orange-100 transition-colors">
+                                            <CardTitle className="text-lg font-medium text-white group-hover:text-primary-100 transition-colors">
                                                 {table.name}
                                             </CardTitle>
                                         </div>
@@ -132,7 +132,7 @@ export function ProjectOverview({ project, copyToClipboard, refreshProject }: Pr
                         <h3 className="text-lg font-medium text-white mb-1">No tables found</h3>
                         <p className="text-neutral-500 max-w-sm text-center mb-6">Create your first table to start defining your data model.</p>
                         <CreateTableDrawer project={project} onTableCreated={refreshProject}>
-                            <Button variant="outline" className="border-orange-500/20 text-orange-500 hover:bg-orange-500/10 hover:text-orange-400">
+                            <Button variant="outline" className="border-primary-500/20 text-primary-500 hover:bg-primary-500/10 hover:text-primary-400">
                                 Create New Table
                             </Button>
                         </CreateTableDrawer>

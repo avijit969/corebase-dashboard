@@ -170,7 +170,7 @@ export default function TableDetailsPage() {
                         <ArrowLeft className="w-4 h-4" /> Back to Database
                     </Link>
                     <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                        <Database className="w-6 h-6 text-orange-500" />
+                        <Database className="w-6 h-6 text-primary-500" />
                         {schema.table}
                     </h2>
                 </div>
@@ -184,7 +184,7 @@ export default function TableDetailsPage() {
 
             <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
                 <TabsList className="bg-neutral-900 border border-white/10 p-1 rounded-lg">
-                    <TabsTrigger value="data" className="data-[state=active]:bg-orange-600 data-[state=active]:text-white text-neutral-400 px-4">
+                    <TabsTrigger value="data" className="data-[state=active]:bg-primary-600 data-[state=active]:text-white text-neutral-400 px-4">
                         <FileJson className="w-4 h-4 mr-2" />
                         Data
                     </TabsTrigger>
@@ -235,7 +235,7 @@ export default function TableDetailsPage() {
                                             onSuccess={handleRefresh}
                                         >
                                             <Button size="sm" variant="secondary" className="bg-neutral-800 hover:bg-neutral-700 text-white border border-white/10">
-                                                <Link2 className="w-4 h-4 mr-2 text-orange-500" />
+                                                <Link2 className="w-4 h-4 mr-2 text-primary-500" />
                                                 Add Relation
                                             </Button>
                                         </AddForeignKeyDialog>
@@ -329,7 +329,7 @@ export default function TableDetailsPage() {
                     </div>
                     <DialogFooter>
                         <Button variant="ghost" onClick={() => setRenameDialogOpen(false)}>Cancel</Button>
-                        <Button onClick={handleRenameColumn} className="bg-orange-600 hover:bg-orange-700">Save</Button>
+                        <Button onClick={handleRenameColumn} className="bg-primary-600 hover:bg-primary-700">Save</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

@@ -105,7 +105,7 @@ export function BucketSidebar({ apiKey, selectedBucket, onSelectBucket, classNam
             <div className="flex-1 overflow-y-auto p-2 space-y-1">
                 {isLoading && (
                     <div className="flex justify-center p-4">
-                        <Loader2 className="w-4 h-4 text-orange-500 animate-spin" />
+                        <Loader2 className="w-4 h-4 text-primary-500 animate-spin" />
                     </div>
                 )}
 
@@ -116,7 +116,7 @@ export function BucketSidebar({ apiKey, selectedBucket, onSelectBucket, classNam
                         className={cn(
                             "flex items-center justify-between p-2 rounded-lg cursor-pointer group transition-colors",
                             selectedBucket === bucket.name
-                                ? "bg-orange-500/10 text-orange-500 border border-orange-500/20"
+                                ? "bg-primary-500/10 text-primary-500 border border-primary-500/20"
                                 : "text-neutral-400 hover:bg-white/5 hover:text-white border border-transparent"
                         )}
                     >
