@@ -4,7 +4,8 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, Database, Globe, Key, Layers, Lock, Server } from "lucide-react";
+import { ArrowRight, Brain, Code, Database, Flame, Globe, Key, Layers, Lock, Server } from "lucide-react";
+import Logo from "@/components/Logo";
 
 export default function LandingPage() {
   const containerVariants = {
@@ -60,9 +61,7 @@ export default function LandingPage() {
       <nav className="fixed top-0 w-full z-50 border-b border-primary-500/10 bg-neutral-950/50 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 font-bold text-xl tracking-tighter cursor-default">
-            <div className="w-8 h-8 rounded-lg bg-linear-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-lg shadow-primary-500/20">
-              <Layers className="w-5 h-5 text-white" />
-            </div>
+            <Logo />
             CoreBase
           </div>
           <div className="flex items-center gap-4">
@@ -102,7 +101,7 @@ export default function LandingPage() {
                   Start Building Now <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
-              <Link href="#features">
+              <Link href="https://corebase-docs.trivyaa.in">
                 <Button size="lg" variant="outline" className="h-14 px-8 text-lg border-white/10 bg-white/5 hover:bg-primary-500/10 hover:border-primary-500/50 hover:text-primary-100 text-gray-300 cursor-pointer rounded-full backdrop-blur-sm transition-all">
                   Read Documentation
                 </Button>
@@ -132,23 +131,23 @@ export default function LandingPage() {
           />
           <FeatureCard
             icon={<Server className="w-6 h-6 text-primary-500" />}
-            title="Real-time Storage"
+            title="Storage"
             description="Store and serve files with ease. Secure, signed URLs for your assets."
           />
           <FeatureCard
-            icon={<Key className="w-6 h-6 text-primary-200" />}
-            title="API Keys"
-            description="Manage access with project-scoped API keys. granular control for your apps."
+            icon={<Flame className="w-6 h-6 text-primary-400" />}
+            title="Realtime"
+            description="Realtime database with instant updates. Keep your data in sync across all devices."
           />
           <FeatureCard
-            icon={<Globe className="w-6 h-6 text-primary-400" />}
-            title="Global Edge"
-            description="Deployed on the edge for lightning fast response times worldwide."
+            icon={<Code className="w-6 h-6 text-primary-400" />}
+            title="SDKs"
+            description="SDKs for all major platforms. Integrate CoreBase into your applications with ease."
           />
           <FeatureCard
-            icon={<Layers className="w-6 h-6 text-primary-300" />}
-            title="Project Isolation"
-            description="Multi-tenancy built-in. Keep your projects and data completely separate."
+            icon={<Brain className="w-6 h-6 text-primary-400" />}
+            title="MCP Server"
+            description="Use Corebase MCP server with your favorite AI tools. To build your apps."
           />
         </motion.div>
 
@@ -190,7 +189,7 @@ export default function LandingPage() {
                 <div className="text-gray-500 mb-2">// 2. Initialize</div>
                 <div className="text-purple-400">import <span className="text-white">{'{'} createClient {'}'}</span> from <span className="text-green-400">'corebase-js'</span>;</div>
                 <div className="text-purple-400 mt-1">const <span className="text-white">corebase</span> = <span className="text-blue-400">createClient</span>(</div>
-                <div className="pl-4 text-green-400">'https://project.corebase.dev'<span className="text-white">,</span></div>
+                <div className="pl-4 text-green-400">'https://corebase.trivyaa.in'<span className="text-white">,</span></div>
                 <div className="pl-4 text-green-400">'your-public-api-key'</div>
                 <div className="text-white">);</div>
 

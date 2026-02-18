@@ -127,7 +127,7 @@ export function AddForeignKeyDialog({
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
 
-            <DialogContent className="bg-neutral-900 border-white/10 text-white max-w-md">
+            <DialogContent className="bg-neutral-900 border-white/10 text-white max-w-lg">
                 <DialogHeader>
                     <DialogTitle>Add Foreign Key</DialogTitle>
                     <DialogDescription>
@@ -137,71 +137,71 @@ export function AddForeignKeyDialog({
 
                 <form onSubmit={handleSubmit} className="space-y-4 w-full">
                     {/* Column */}
-                    <div className="w-full">
-                        <Label>Column</Label>
-                        <Select value={column} onValueChange={setColumn}>
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {existingColumns.map((c) => (
-                                    <SelectItem key={c} value={c}>
-                                        {c}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
+
+                    <Label>Column</Label>
+                    <Select value={column} onValueChange={setColumn} >
+                        <SelectTrigger className="w-full">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="w-f">
+                            {existingColumns.map((c) => (
+                                <SelectItem key={c} value={c}>
+                                    {c}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+
 
                     {/* Ref Table */}
-                    <div className="w-full">
-                        <Label>Referenced Table</Label>
-                        <Select value={refTable} onValueChange={setRefTable}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select table" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {refTables.map((t) => (
-                                    <SelectItem key={t} value={t}>
-                                        {t}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
+
+                    <Label>Referenced Table</Label>
+                    <Select value={refTable} onValueChange={setRefTable}>
+                        <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select table" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {refTables.map((t) => (
+                                <SelectItem key={t} value={t}>
+                                    {t}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+
 
                     {/* Ref Column */}
-                    <div>
-                        <Label>Referenced Column</Label>
-                        <Select value={refColumn} onValueChange={setRefColumn}>
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {refColumns.map((c) => (
-                                    <SelectItem key={c} value={c}>
-                                        {c}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
+
+                    <Label>Referenced Column</Label>
+                    <Select value={refColumn} onValueChange={setRefColumn}>
+                        <SelectTrigger className="w-full">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {refColumns.map((c) => (
+                                <SelectItem key={c} value={c}>
+                                    {c}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+
 
                     {/* On Delete */}
-                    <div>
-                        <Label>On Delete</Label>
-                        <Select value={onDelete} onValueChange={setOnDelete}>
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="cascade">Cascade</SelectItem>
-                                <SelectItem value="set null">Set Null</SelectItem>
-                                <SelectItem value="restrict">Restrict</SelectItem>
-                                <SelectItem value="no action">No Action</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
+
+                    <Label>On Delete</Label>
+                    <Select value={onDelete} onValueChange={setOnDelete}>
+                        <SelectTrigger className="w-full">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="cascade">Cascade</SelectItem>
+                            <SelectItem value="set null">Set Null</SelectItem>
+                            <SelectItem value="restrict">Restrict</SelectItem>
+                            <SelectItem value="no action">No Action</SelectItem>
+                        </SelectContent>
+                    </Select>
+
 
                     <DialogFooter>
                         <Button variant="ghost" onClick={() => setOpen(false)}>

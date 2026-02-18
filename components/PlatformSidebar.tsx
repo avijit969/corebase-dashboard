@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/lib/store/auth-store';
+import Logo from './Logo';
 
 interface Project {
     id: string;
@@ -153,11 +154,9 @@ function SidebarContent({ projects, currentProject, isProjectView, projectId, ro
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="w-full justify-between px-2 h-12 hover:bg-white/5 border border-transparent hover:border-white/10">
                             <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-linear-to-br from-primary-600 to-primary-500 flex items-center justify-center shrink-0">
-                                    <Layers className="w-5 h-5 text-white" />
-                                </div>
+                                <Logo />
                                 <div className="flex flex-col items-start overflow-hidden">
-                                    <span className="text-sm font-bold tracking-tight truncate w-[120px]">
+                                    <span className="text-sm font-bold truncate">
                                         {currentProject ? currentProject.name : "CoreBase"}
                                     </span>
                                     <span className="text-xs text-gray-500 font-normal">
@@ -204,13 +203,13 @@ function SidebarContent({ projects, currentProject, isProjectView, projectId, ro
                     <nav className="space-y-4">
                         {!isProjectView && (
                             <div className="flex flex-col gap-2">
-                                <NavLink href="/platform" icon={<Layers className="w-4 h-4" />}>Projects</NavLink>
-                                <NavLink href="/platform/settings" icon={<Settings className="w-4 h-4" />}>Settings</NavLink>
+                                <NavLink href="/platform" icon={<Layers className="w-4 h-4" />} active={pathname === `/platform`}>Projects</NavLink>
+                                <NavLink href="/platform/settings" icon={<Settings className="w-4 h-4" />} active={pathname === `/platform/settings`}>Settings</NavLink>
                             </div>
                         )}
 
                         {isProjectView && projectId && (
-                            <>
+                            <div className="flex flex-col gap-2">
                                 <NavLink
                                     href={`/platform/projects/${projectId}`}
                                     active={pathname === `/platform/projects/${projectId}`}
@@ -227,7 +226,7 @@ function SidebarContent({ projects, currentProject, isProjectView, projectId, ro
                                     icon={<Folder className="w-4 h-4" />}
                                 >Storage</NavLink>
                                 <NavLink href={`/platform/projects/${projectId}/settings`} icon={<Settings className="w-4 h-4" />}>Settings</NavLink>
-                            </>
+                            </div>
                         )}
                     </nav>
                 </div>

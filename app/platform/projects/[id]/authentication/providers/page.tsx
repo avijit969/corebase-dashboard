@@ -113,7 +113,7 @@ export default function ProvidersPage() {
         }
     };
 
-    if (projectLoading) {
+    if (projectLoading || !providers) {
         return (
             <div className="space-y-6 max-w-4xl">
                 <div className="grid gap-6">
@@ -143,7 +143,7 @@ export default function ProvidersPage() {
                             </CardDescription>
                         </div>
                         <Switch
-                            checked={providers.google.enabled}
+                            checked={providers?.google?.enabled}
                             onCheckedChange={() => handleToggle('google')}
                         />
                     </CardHeader>
@@ -154,7 +154,7 @@ export default function ProvidersPage() {
                                 <Input
                                     id="google-client-id"
                                     placeholder="Enter your Google Client ID"
-                                    value={providers.google.clientId}
+                                    value={providers?.google?.clientId}
                                     onChange={(e) => handleChange('google', 'clientId', e.target.value)}
                                     className="bg-neutral-950 border-white/10 text-white placeholder:text-gray-600 focus:border-blue-500/50"
                                 />
@@ -165,7 +165,7 @@ export default function ProvidersPage() {
                                     id="google-client-secret"
                                     type="password"
                                     placeholder="Enter your Google Client Secret"
-                                    value={providers.google.clientSecret}
+                                    value={providers?.google?.clientSecret}
                                     onChange={(e) => handleChange('google', 'clientSecret', e.target.value)}
                                     className="bg-neutral-950 border-white/10 text-white placeholder:text-gray-600 focus:border-blue-500/50"
                                 />
@@ -206,7 +206,7 @@ export default function ProvidersPage() {
                                 <Input
                                     id="github-client-id"
                                     placeholder="Enter your GitHub Client ID"
-                                    value={providers.github.clientId}
+                                    value={providers?.github?.clientId}
                                     onChange={(e) => handleChange('github', 'clientId', e.target.value)}
                                     className="bg-neutral-950 border-white/10 text-white placeholder:text-gray-600 focus:border-purple-500/50"
                                 />
@@ -217,7 +217,7 @@ export default function ProvidersPage() {
                                     id="github-client-secret"
                                     type="password"
                                     placeholder="Enter your GitHub Client Secret"
-                                    value={providers.github.clientSecret}
+                                    value={providers?.github?.clientSecret}
                                     onChange={(e) => handleChange('github', 'clientSecret', e.target.value)}
                                     className="bg-neutral-950 border-white/10 text-white placeholder:text-gray-600 focus:border-purple-500/50"
                                 />

@@ -54,7 +54,7 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
                         <Menu className="w-5 h-5" />
                     </Button>
                     <Link href="/" className="flex items-center gap-2 font-bold text-xl tracking-tighter">
-                        <div className="w-8 h-8 rounded-lg bg-linear-to-br from-primary-600 to-primary-500 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-lg bg-linear-to-br from-purple-600 to-purple-500 flex items-center justify-center">
                             <Layers className="w-5 h-5 text-white" />
                         </div>
                         CoreBase
