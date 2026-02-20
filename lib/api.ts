@@ -322,5 +322,53 @@ export const api = {
             });
             return handleResponse(res);
         }
+    },
+    cron: {
+        create: async (apiKey: string, data: any): Promise<any> => {
+            const res = await fetch(`${API_BASE_URL}/cron`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey
+                },
+                body: JSON.stringify(data),
+            });
+            return handleResponse(res);
+        },
+        list: async (apiKey: string): Promise<any> => {
+            const res = await fetch(`${API_BASE_URL}/cron`, {
+                method: "GET",
+                headers: { "x-api-key": apiKey },
+            });
+            return handleResponse(res);
+        },
+        get: async (apiKey: string, id: string): Promise<any> => {
+            const res = await fetch(`${API_BASE_URL}/cron/${id}`, {
+                method: "GET",
+                headers: { "x-api-key": apiKey },
+            });
+            return handleResponse(res);
+        },
+        delete: async (apiKey: string, id: string): Promise<any> => {
+            const res = await fetch(`${API_BASE_URL}/cron/${id}`, {
+                method: "DELETE",
+                headers: { "x-api-key": apiKey },
+            });
+            return handleResponse(res);
+        },
+        listExecutions: async (apiKey: string, id: string): Promise<any> => {
+            const res = await fetch(`${API_BASE_URL}/cron/${id}/executions`, {
+                method: "GET",
+                headers: { "x-api-key": apiKey },
+            });
+            return handleResponse(res);
+        },
+        getExecution: async (apiKey: string, id: string, executionId: string): Promise<any> => {
+            const res = await fetch(`${API_BASE_URL}/cron/${id}/executions/${executionId}`, {
+                method: "GET",
+                headers: { "x-api-key": apiKey },
+            });
+            return handleResponse(res);
+        }
     }
 };
