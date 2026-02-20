@@ -17,6 +17,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "CoreBase | Modern Backend-as-a-Service",
   description: "Instant APIs, Database, and Auth for your next big idea.",
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({

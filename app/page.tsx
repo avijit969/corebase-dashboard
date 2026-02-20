@@ -60,10 +60,9 @@ export default function LandingPage() {
       {/* Navbar */}
       <nav className="fixed top-0 w-full z-50 border-b border-primary-500/10 bg-neutral-950/50 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2 font-bold text-xl tracking-tighter cursor-default">
-            <Logo />
-            CoreBase
-          </div>
+          <Link href="/" className="flex items-center">
+            <img src="/logo/dark.svg" alt="CoreBase" className="h-8 w-auto" />
+          </Link>
           <div className="flex items-center gap-4">
             <Link href="/platform/login">
               <Button variant="ghost" className="hover:bg-white/5 hover:text-primary-400 text-gray-300 transition-colors">Login</Button>

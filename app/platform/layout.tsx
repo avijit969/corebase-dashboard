@@ -53,11 +53,8 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
                     <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)} className="-ml-2 text-gray-400 hover:text-white">
                         <Menu className="w-5 h-5" />
                     </Button>
-                    <Link href="/" className="flex items-center gap-2 font-bold text-xl tracking-tighter">
-                        <div className="w-8 h-8 rounded-lg bg-linear-to-br from-purple-600 to-purple-500 flex items-center justify-center">
-                            <Layers className="w-5 h-5 text-white" />
-                        </div>
-                        CoreBase
+                    <Link href="/" className="flex items-center">
+                        <img src="/logo/dark.svg" alt="CoreBase Logo" className="h-6 w-auto" />
                     </Link>
                 </div>
                 {children}

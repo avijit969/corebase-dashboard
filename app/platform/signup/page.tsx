@@ -51,11 +51,8 @@ export default function SignupPage() {
                 className="z-10 w-full max-w-md"
             >
                 <div className="flex justify-center mb-8">
-                    <Link href="/" className="flex items-center gap-2 font-bold text-2xl tracking-tighter">
-                        <div className="w-10 h-10 rounded-xl bg-linear-to-br from-primary-600 to-primary-500 flex items-center justify-center">
-                            <Layers className="w-6 h-6 text-white" />
-                        </div>
-                        CoreBase
+                    <Link href="/" className="flex items-center">
+                        <img src="/logo/dark.svg" alt="CoreBase Logo" className="h-10 w-auto" />
                     </Link>
                 </div>
 
