@@ -46,7 +46,7 @@ export default function ProjectsPage() {
     const [creating, setCreating] = useState(false);
     const [token, setToken] = useState<string | null>(null);
     const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
-    const { setApiKey } = useProjectStore();
+    const { setApiKey, setProjectName } = useProjectStore();
     const { setUser } = useAuthStore();
 
     useEffect(() => {
@@ -245,6 +245,7 @@ export default function ProjectsPage() {
                                 router.push(`/platform/projects/${project.id}`)
                                 // set project api key in store
                                 setApiKey(project.api_key)
+                                setProjectName(project.name)
                             }}
                         >
                             <CardHeader className="flex flex-row items-start justify-between pb-2">

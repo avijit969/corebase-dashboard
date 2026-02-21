@@ -942,7 +942,176 @@ All errors follow this format:
 
 ---
 
-## 7. Realtime (WebSocket)
+## 7. Cron Jobs
+*Schedule HTTP webhooks against your API and manage active tasks.*
+*Requires `x-api-key` header.*
+
+### Create Cron Job
+Schedule a new recurrent task using standard cron syntax.
+
+*   **Endpoint**: `POST /v1/cron`
+*   **Headers**: 
+    *   `x-api-key`: `<project_api_key>`
+    *   `Authorization`: `Bearer <user_token>` (Optional)
+
+**Request Body:**
+```json
+{
+  "name": "Nightly Sync",
+  "description": "Synchronize user data",
+  "cron_expression": "0 0 * * *",
+  "url": "https://api.example.com/sync",
+  "method": "POST",
+  "headers": "{\"Authorization\":\"Bearer my-secret\"}",
+  "body": "{\"source\":\"corebase\"}",
+  "max_retry_count": 3,
+  "timeout_ms": 10000,
+  "is_active": true
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "status": "success",
+  "data": {
+    "message": "Cron job created successfully",
+    "job": {
+      "id": "uuid...",
+      "user_id": "user_...",
+      "cron_expression": "0 0 * * *",
+      "name": "Nightly Sync",
+      "url": "https://api.example.com/sync",
+      "method": "POST"
+    }
+  }
+}
+```
+
+### List Cron Jobs
+Retrieve all scheduled cron jobs in the current project.
+
+*   **Endpoint**: `GET /v1/cron`
+*   **Headers**: `x-api-key: <project_api_key>`
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": {
+    "jobs": [
+      {
+        "id": "uuid...",
+        "name": "Nightly Sync",
+        "cron_expression": "0 0 * * *",
+        "url": "https://api.example.com/sync",
+        "method": "POST",
+        "is_active": 1,
+        "created_at": "..."
+      }
+    ]
+  }
+}
+```
+
+### Get Cron Job Details
+Retrieve details for a specific scheduled job.
+
+*   **Endpoint**: `GET /v1/cron/:id`
+*   **Headers**: `x-api-key: <project_api_key>`
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": {
+    "job": {
+      "id": "uuid...",
+      "name": "Nightly Sync",
+      "cron_expression": "0 0 * * *",
+      "url": "https://api.example.com/sync",
+      "method": "POST",
+      "max_retry_count": 3,
+      "is_active": 1
+    }
+  }
+}
+```
+
+### Delete Cron Job
+Permanently remove a scheduled job so it no longer triggers.
+
+*   **Endpoint**: `DELETE /v1/cron/:id`
+*   **Headers**: `x-api-key: <project_api_key>`
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": {
+    "message": "Cron job deleted successfully",
+    "id": "uuid..."
+  }
+}
+```
+
+### List Cron Job Executions
+Retrieve the history of executions for a specific cron job (up to the last 50).
+
+*   **Endpoint**: `GET /v1/cron/:id/executions`
+*   **Headers**: `x-api-key: <project_api_key>`
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": {
+    "executions": [
+      {
+        "id": "exec_uuid...",
+        "cron_id": "uuid...",
+        "status": "success",
+        "http_status_code": 200,
+        "response_body": "{\"message\":\"sync complete\"}",
+        "error_message": "",
+        "execution_time": 145,
+        "attempt": 1,
+        "created_at": "..."
+      }
+    ]
+  }
+}
+```
+
+### Get Job Execution Details
+Retrieve details for a specific historical execution.
+
+*   **Endpoint**: `GET /v1/cron/:id/executions/:executionId`
+*   **Headers**: `x-api-key: <project_api_key>`
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": {
+    "execution": {
+      "id": "exec_uuid...",
+      "cron_id": "uuid...",
+      "status": "failed",
+      "http_status_code": 500,
+      "response_body": "",
+      "error_message": "HTTP error! status: 500",
+      "execution_time": 421,
+      "attempt": 3,
+      "created_at": "..."
+    }
+  }
+}
+```
+
+---
+
+## 8. Realtime (WebSocket)
 *Subscribe to real-time database updates.*
 *Requires `x-api-key` header to identify the project and initial Auth.*
 
@@ -1063,5 +1232,174 @@ interface QueryJoin {
     on: Record<string, string>; // e.g., { "table1.col": "table2.col" }
     select?: string[];
     join?: QueryJoin[];
+}
+```
+
+---
+
+## 9. Custom Email
+*Manage custom email templates and send emails.*
+*Requires project token for protected routes.*
+
+### Create Custom Email Template
+Create a new email template for a project.
+
+*   **Endpoint**: `POST /v1/custom-email/`
+*   **Headers**: 
+    *   `x-api-key`: `<project_api_key>`
+    *   `Authorization`: `Bearer <token>` (Platform token)
+
+**Request Body:**
+```json
+{
+  "name": "Welcome Email",
+  "subject": "Welcome to our app!",
+  "body": "Hi {{name}}, welcome onboard!"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "status": "success",
+  "data": {
+    "message": "Email created successfully",
+    "email": {
+      "name": "Welcome Email",
+      "subject": "Welcome to our app!",
+      "body": "Hi {{name}}, welcome onboard!"
+    }
+  }
+}
+```
+
+### List Custom Email Templates
+Retrieve all email templates associated with the project.
+
+*   **Endpoint**: `GET /v1/custom-email/`
+*   **Headers**: 
+    *   `x-api-key`: `<project_api_key>`
+    *   `Authorization`: `Bearer <token>` (Platform token)
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": {
+    "message": "Emails fetched successfully",
+    "result": [
+      {
+        "id": "email_uuid",
+        "name": "Welcome Email",
+        "subject": "Welcome to our app!",
+        "body": "Hi {{name}}, welcome onboard!",
+        "project_id": "proj_123"
+      }
+    ]
+  }
+}
+```
+
+### Get Custom Email Template
+Retrieve a single template by ID.
+
+*   **Endpoint**: `GET /v1/custom-email/:id`
+*   **Headers**: 
+    *   `x-api-key`: `<project_api_key>`
+    *   `Authorization`: `Bearer <token>` (Platform token)
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": {
+    "message": "Email fetched successfully",
+    "result": {
+      "id": "email_uuid",
+      "name": "Welcome Email",
+      "subject": "Welcome to our app!",
+      "body": "Hi {{name}}, welcome onboard!",
+      "project_id": "proj_123"
+    }
+  }
+}
+```
+
+### Update Custom Email Template
+Update an existing template.
+
+*   **Endpoint**: `PATCH /v1/custom-email/:id`
+*   **Headers**: 
+    *   `x-api-key`: `<project_api_key>`
+    *   `Authorization`: `Bearer <token>` (Platform token)
+
+**Request Body:**
+```json
+{
+  "name": "Updated Welcome Email",
+  "subject": "Welcome to our app!",
+  "body": "Hi {{name}}, welcome onboard!"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": {
+    "message": "Email updated successfully",
+    "email": {
+      "name": "Updated Welcome Email",
+      "subject": "Welcome to our app!",
+      "body": "Hi {{name}}, welcome onboard!"
+    }
+  }
+}
+```
+
+### Delete Custom Email Template
+Delete a given template by ID.
+
+*   **Endpoint**: `DELETE /v1/custom-email/:id`
+*   **Headers**: 
+    *   `x-api-key`: `<project_api_key>`
+    *   `Authorization`: `Bearer <token>` (Platform token)
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": {
+    "message": "Email deleted successfully",
+    "result": {
+      "changes": 1
+    }
+  }
+}
+```
+
+### Send Custom Email
+Dispatch an email to an end user using a pre-defined template mapping `{{name}}` dynamically.
+
+*   **Endpoint**: `POST /v1/custom-email/:id/send`
+*   **Headers**: 
+    *   `x-api-key`: `<project_api_key>`
+    *   `Authorization`: `Bearer <user_token>` (End-user token or App token)
+
+**Request Body:**
+```json
+{
+  "to": "user@example.com",
+  "name": "John Doe"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "data": {
+    "message": "Email sent successfully"
+  }
 }
 ```

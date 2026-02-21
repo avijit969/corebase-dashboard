@@ -194,7 +194,7 @@ export default function ProvidersPage() {
                             </CardDescription>
                         </div>
                         <Switch
-                            checked={providers.github.enabled}
+                            checked={providers?.github?.enabled}
                             onCheckedChange={() => handleToggle('github')}
                             className='bg-primary-600'
                         />

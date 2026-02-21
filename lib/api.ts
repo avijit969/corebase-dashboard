@@ -370,5 +370,73 @@ export const api = {
             });
             return handleResponse(res);
         }
+    },
+    customEmail: {
+        create: async (apiKey: string, data: { name: string; subject: string; body: string }): Promise<any> => {
+            const token = localStorage.getItem("platform_token");
+            const res = await fetch(`${API_BASE_URL}/custom-email`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey,
+                },
+                body: JSON.stringify(data),
+            });
+            return handleResponse(res);
+        },
+        list: async (apiKey: string): Promise<any> => {
+            const token = localStorage.getItem("platform_token");
+            const res = await fetch(`${API_BASE_URL}/custom-email`, {
+                method: "GET",
+                headers: {
+                    "x-api-key": apiKey,
+                },
+            });
+            return handleResponse(res);
+        },
+        get: async (apiKey: string, id: string): Promise<any> => {
+            const token = localStorage.getItem("platform_token");
+            const res = await fetch(`${API_BASE_URL}/custom-email/${id}`, {
+                method: "GET",
+                headers: {
+                    "x-api-key": apiKey,
+                },
+            });
+            return handleResponse(res);
+        },
+        update: async (apiKey: string, id: string, data: { name?: string; subject?: string; body?: string }): Promise<any> => {
+            const token = localStorage.getItem("platform_token");
+            const res = await fetch(`${API_BASE_URL}/custom-email/${id}`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey,
+                },
+                body: JSON.stringify(data),
+            });
+            return handleResponse(res);
+        },
+        delete: async (apiKey: string, id: string): Promise<any> => {
+            const token = localStorage.getItem("platform_token");
+            const res = await fetch(`${API_BASE_URL}/custom-email/${id}`, {
+                method: "DELETE",
+                headers: {
+                    "x-api-key": apiKey,
+                },
+            });
+            return handleResponse(res);
+        },
+        send: async (apiKey: string, id: string, data: { to: string; name: string; projectName: string }): Promise<any> => {
+            const token = localStorage.getItem("platform_token");
+            const res = await fetch(`${API_BASE_URL}/custom-email/${id}/send`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey,
+                },
+                body: JSON.stringify(data),
+            });
+            return handleResponse(res);
+        }
     }
 };
