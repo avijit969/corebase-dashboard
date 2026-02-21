@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Layers, LogOut, Settings, User, Database, Users, ChevronDown, Plus, Folder, Shield, Table, Clock } from 'lucide-react';
+import { Layers, LogOut, Settings, User, Database, Users, ChevronDown, Plus, Folder, Shield, Table, Clock, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -230,6 +230,11 @@ function SidebarContent({ projects, currentProject, isProjectView, projectId, ro
                                     active={pathname?.includes(`/platform/projects/${projectId}/cron`)}
                                     icon={<Clock className="w-4 h-4" />}
                                 >Cron Jobs</NavLink>
+                                <NavLink
+                                    href={`/platform/projects/${projectId}/email`}
+                                    active={pathname?.includes(`/platform/projects/${projectId}/email`)}
+                                    icon={<Mail className="w-4 h-4" />}
+                                >Email</NavLink>
                                 <NavLink href={`/platform/projects/${projectId}/settings`} icon={<Settings className="w-4 h-4" />}>Settings</NavLink>
                             </div>
                         )}
