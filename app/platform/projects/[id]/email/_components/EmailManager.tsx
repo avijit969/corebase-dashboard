@@ -23,13 +23,15 @@ export default function EmailManager({ apiKey, projectId, projectName }: EmailMa
         queryFn: () => api.customEmail.list(apiKey),
         enabled: !!apiKey,
     });
-
+    console.log(emails);
     const emailConfigs = emails?.result || [];
 
     // Auto select first if none selected
-    if (!selectedEmailId && emailConfigs.length > 0) {
-        setSelectedEmailId(emailConfigs[0].id);
-    }
+    React.useEffect(() => {
+        if (!selectedEmailId && emailConfigs.length > 0) {
+            setSelectedEmailId(emailConfigs[0].id);
+        }
+    }, [emailConfigs.length, selectedEmailId, emailConfigs]);
 
     const selectedEmail = emailConfigs.find((e: any) => e.id === selectedEmailId) || null;
 
@@ -85,6 +87,7 @@ export default function EmailManager({ apiKey, projectId, projectName }: EmailMa
             <div className="flex-1 flex flex-col bg-neutral-900/50 backdrop-blur-sm p-4 overflow-y-auto w-full relative">
                 {selectedEmail ? (
                     <EmailEditor
+                        key={selectedEmail.id}
                         email={selectedEmail}
                         apiKey={apiKey}
                         projectId={projectId}

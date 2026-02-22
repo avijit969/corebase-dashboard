@@ -117,7 +117,8 @@ const DEFAULT_EMAIL_TEMPLATE = `<!DOCTYPE html>
 
 function WelcomeEmailTab({ id }: { id: string }) {
     const { currentApiKey, currentProjectName } = useProjectStore();
-
+    console.log("current api key", currentApiKey);
+    console.log("current project name", currentProjectName);
     const apiKey = currentApiKey;
 
     const { data: emails, refetch, isLoading: emailsLoading } = useQuery({
@@ -126,7 +127,7 @@ function WelcomeEmailTab({ id }: { id: string }) {
         enabled: !!apiKey,
     });
 
-    const emailConfigs = emails?.result || [];
+    const emailConfigs = emails?.result.filter((e: any) => e.name === "Welcome Email") || [];
 
     const welcomeEmail = emailConfigs.find((e: any) => e.name === "Welcome Email") || emailConfigs[0];
     console.log(welcomeEmail);

@@ -13,7 +13,8 @@ export default function CustomEmailPage() {
     const router = useRouter();
     const id = params?.id as string;
     const { currentApiKey, currentProjectName, setApiKey, setProjectId, setProjectName } = useProjectStore();
-
+    console.log("current api key", currentApiKey);
+    console.log("current project name", currentProjectName);
     useEffect(() => {
         if (!localStorage.getItem("platform_token")) {
             router.push("/platform/login");
@@ -22,27 +23,8 @@ export default function CustomEmailPage() {
     }, [router]);
 
     // Ensure we have project details if directly loaded
-    const { data: project } = useQuery({
-        queryKey: ['project', id],
-        queryFn: async () => {
-            const token = localStorage.getItem("platform_token");
-            if (!token) return null;
-            return await api.projects.get(id, token);
-        },
-        enabled: !currentApiKey,
-    });
 
-    useEffect(() => {
-        if (project) {
-            setApiKey(project.api_key || project.meta?.api_key || project.meta?.apiKey);
-            setProjectId(project.id);
-            setProjectName(project.name);
-        }
-    }, [project, setApiKey, setProjectId, setProjectName]);
-
-    const apiKey = currentApiKey || project?.api_key || project?.meta?.api_key || project?.meta?.apiKey;
-
-    if (!apiKey) {
+    if (!currentApiKey) {
         return (
             <div className="flex items-center justify-center min-h-[500px]">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
@@ -66,7 +48,7 @@ export default function CustomEmailPage() {
                 </div>
             </div>
 
-            <EmailManager apiKey={apiKey} projectId={id} projectName={currentProjectName || project?.name || "App"} />
+            <EmailManager apiKey={currentApiKey} projectId={id} projectName={currentProjectName || "App"} />
         </div>
     );
 }

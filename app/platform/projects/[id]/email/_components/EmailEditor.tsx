@@ -30,7 +30,7 @@ export default function EmailEditor({ email, apiKey, projectId, projectName }: E
         setName(email.name);
         setSubject(email.subject || "");
         setBody(email.body || "");
-    }, [email]);
+    }, [email.id]);
 
     const saveMutation = useMutation({
         mutationFn: async () => {
@@ -145,8 +145,9 @@ export default function EmailEditor({ email, apiKey, projectId, projectName }: E
                 </div>
 
                 <div className="flex-1 bg-black/60 border border-white/10 rounded-xl overflow-hidden relative">
-                    <TabsContent value="editor" className="m-0 h-full w-full outline-none data-[state=inactive]:hidden p-0 absolute inset-0">
+                    <TabsContent forceMount value="editor" className="m-0 h-full w-full outline-none data-[state=inactive]:hidden p-0 absolute inset-0">
                         <Editor
+                            path={`email-${email.id || 'new'}.html`}
                             height="100%"
                             defaultLanguage="html"
                             theme="vs-dark"
@@ -163,7 +164,7 @@ export default function EmailEditor({ email, apiKey, projectId, projectName }: E
                         />
                     </TabsContent>
 
-                    <TabsContent value="preview" className="m-0 h-full w-full outline-none data-[state=inactive]:hidden absolute inset-0 bg-white">
+                    <TabsContent forceMount value="preview" className="m-0 h-full w-full outline-none data-[state=inactive]:hidden absolute inset-0 bg-white">
                         <div className="w-full h-full p-4 overflow-y-auto bg-neutral-100 flex items-start justify-center">
                             <iframe
                                 srcDoc={previewHtml}
@@ -173,7 +174,7 @@ export default function EmailEditor({ email, apiKey, projectId, projectName }: E
                         </div>
                     </TabsContent>
 
-                    <TabsContent value="send" className="m-0 h-full w-full outline-none data-[state=inactive]:hidden absolute inset-0 p-8">
+                    <TabsContent forceMount value="send" className="m-0 h-full w-full outline-none data-[state=inactive]:hidden absolute inset-0 p-8">
                         <div className="max-w-xl mx-auto h-full flex flex-col justify-center">
                             <div className="bg-neutral-900 border border-white/10 rounded-xl p-8 shadow-2xl space-y-6">
                                 <div className="text-center space-y-2">
