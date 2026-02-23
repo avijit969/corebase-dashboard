@@ -50,6 +50,9 @@ export default function LoginPage() {
                 };
                 setUser(user);
                 localStorage.setItem("platform_token", response.access_token);
+                if ((response as any).refresh_token) {
+                    localStorage.setItem("platform_refresh_token", (response as any).refresh_token);
+                }
                 toast.success("Welcome back!", {
                     description: "You have successfully signed in."
                 });

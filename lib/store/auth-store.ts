@@ -24,7 +24,8 @@ export const useAuthStore = create<AuthState>()(
             setUser: (user) => set({ user }),
             setToken: (token) => set({ token }),
             logout: () => {
-                localStorage.removeItem("platform_token"); // Clear legacy token if explicit logout
+                localStorage.removeItem("platform_token");
+                localStorage.removeItem("platform_refresh_token");
                 set({ user: null, token: null });
             },
         }),

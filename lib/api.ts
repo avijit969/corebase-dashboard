@@ -27,6 +27,67 @@ async function handleResponse<T>(response: Response): Promise<T> {
     return data.data; // API returns { status: 'success', data: ... }
 }
 
+function handleAuthFailure() {
+    if (typeof window !== 'undefined') {
+        localStorage.removeItem("platform_token");
+        localStorage.removeItem("platform_refresh_token");
+        window.location.href = "/platform/login";
+    }
+}
+
+async function fetchWithPlatformAuth(url: string, options: RequestInit = {}): Promise<Response> {
+    const isBrowser = typeof window !== 'undefined';
+    let token = isBrowser ? localStorage.getItem("platform_token") : null;
+
+    const headers = new Headers(options.headers || {});
+    if (headers.has("Authorization")) {
+        const authHeader = headers.get("Authorization");
+        if (authHeader && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+        }
+    } else if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+    }
+
+    let response = await fetch(url, { ...options, headers });
+
+    if (response.status === 401 && isBrowser) {
+        const refreshToken = localStorage.getItem("platform_refresh_token");
+        if (refreshToken) {
+            try {
+                const refreshRes = await fetch(`${API_BASE_URL}/platform/auth/refresh`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${refreshToken}` }
+                });
+
+                if (refreshRes.ok) {
+                    const data = await refreshRes.json();
+                    if (data?.data?.access_token) {
+                        localStorage.setItem("platform_token", data.data.access_token);
+                        if (data.data.refresh_token) {
+                            localStorage.setItem("platform_refresh_token", data.data.refresh_token);
+                        }
+
+                        // Retry original request
+                        headers.set("Authorization", `Bearer ${data.data.access_token}`);
+                        response = await fetch(url, { ...options, headers });
+                    } else {
+                        handleAuthFailure();
+                    }
+                } else {
+                    handleAuthFailure();
+                }
+            } catch (err) {
+                handleAuthFailure();
+            }
+        } else {
+            handleAuthFailure();
+        }
+    }
+
+    return response;
+}
+
 export const api = {
     auth: {
         signup: async (email: string, password: string, name: string): Promise<any> => {
@@ -46,7 +107,7 @@ export const api = {
             return handleResponse(res);
         },
         me: async (token: string): Promise<any> => {
-            const res = await fetch(`${API_BASE_URL}/platform/auth/user`, {
+            const res = await fetchWithPlatformAuth(`${API_BASE_URL}/platform/auth/user`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -58,7 +119,7 @@ export const api = {
     },
     projects: {
         create: async (name: string, token: string): Promise<any> => {
-            const res = await fetch(`${API_BASE_URL}/projects`, {
+            const res = await fetchWithPlatformAuth(`${API_BASE_URL}/projects`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -69,7 +130,7 @@ export const api = {
             return handleResponse(res);
         },
         list: async (token: string): Promise<any> => {
-            const res = await fetch(`${API_BASE_URL}/projects`, {
+            const res = await fetchWithPlatformAuth(`${API_BASE_URL}/projects`, {
                 method: "GET",
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -79,7 +140,7 @@ export const api = {
             return handleResponse(res);
         },
         get: async (id: string, token: string): Promise<any> => {
-            const res = await fetch(`${API_BASE_URL}/projects/${id}`, {
+            const res = await fetchWithPlatformAuth(`${API_BASE_URL}/projects/${id}`, {
                 method: "GET",
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -90,7 +151,7 @@ export const api = {
             return data;
         },
         delete: async (id: string, token: string): Promise<any> => {
-            const res = await fetch(`${API_BASE_URL}/projects/${id}`, {
+            const res = await fetchWithPlatformAuth(`${API_BASE_URL}/projects/${id}`, {
                 method: "DELETE",
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -99,7 +160,7 @@ export const api = {
             return handleResponse(res);
         },
         update: async (id: string, token: string, data: any): Promise<any> => {
-            const res = await fetch(`${API_BASE_URL}/projects/${id}`, {
+            const res = await fetchWithPlatformAuth(`${API_BASE_URL}/projects/${id}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -110,7 +171,7 @@ export const api = {
             return handleResponse(res);
         },
         updateAuthConfig: async (projectId: string, token: string, config: any): Promise<any> => {
-            const res = await fetch(`${API_BASE_URL}/auth/project/auth/config?projectId=${projectId}`, {
+            const res = await fetchWithPlatformAuth(`${API_BASE_URL}/auth/project/auth/config?projectId=${projectId}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -121,12 +182,8 @@ export const api = {
             return handleResponse(res);
         },
         getUsers: async (id: string): Promise<any> => {
-            const token = localStorage.getItem("platform_token");
-            const res = await fetch(`${API_BASE_URL}/projects/${id}/users`, {
+            const res = await fetchWithPlatformAuth(`${API_BASE_URL}/projects/${id}/users`, {
                 method: "GET",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
             });
             return handleResponse(res);
         }
@@ -373,8 +430,7 @@ export const api = {
     },
     customEmail: {
         create: async (apiKey: string, data: { name: string; subject: string; body: string }): Promise<any> => {
-            const token = localStorage.getItem("platform_token");
-            const res = await fetch(`${API_BASE_URL}/custom-email`, {
+            const res = await fetchWithPlatformAuth(`${API_BASE_URL}/custom-email`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -385,8 +441,7 @@ export const api = {
             return handleResponse(res);
         },
         list: async (apiKey: string): Promise<any> => {
-            const token = localStorage.getItem("platform_token");
-            const res = await fetch(`${API_BASE_URL}/custom-email`, {
+            const res = await fetchWithPlatformAuth(`${API_BASE_URL}/custom-email`, {
                 method: "GET",
                 headers: {
                     "x-api-key": apiKey,
@@ -395,8 +450,7 @@ export const api = {
             return handleResponse(res);
         },
         get: async (apiKey: string, id: string): Promise<any> => {
-            const token = localStorage.getItem("platform_token");
-            const res = await fetch(`${API_BASE_URL}/custom-email/${id}`, {
+            const res = await fetchWithPlatformAuth(`${API_BASE_URL}/custom-email/${id}`, {
                 method: "GET",
                 headers: {
                     "x-api-key": apiKey,
@@ -405,8 +459,7 @@ export const api = {
             return handleResponse(res);
         },
         update: async (apiKey: string, id: string, data: { name?: string; subject?: string; body?: string }): Promise<any> => {
-            const token = localStorage.getItem("platform_token");
-            const res = await fetch(`${API_BASE_URL}/custom-email/${id}`, {
+            const res = await fetchWithPlatformAuth(`${API_BASE_URL}/custom-email/${id}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -417,8 +470,7 @@ export const api = {
             return handleResponse(res);
         },
         delete: async (apiKey: string, id: string): Promise<any> => {
-            const token = localStorage.getItem("platform_token");
-            const res = await fetch(`${API_BASE_URL}/custom-email/${id}`, {
+            const res = await fetchWithPlatformAuth(`${API_BASE_URL}/custom-email/${id}`, {
                 method: "DELETE",
                 headers: {
                     "x-api-key": apiKey,
@@ -427,8 +479,7 @@ export const api = {
             return handleResponse(res);
         },
         send: async (apiKey: string, id: string, data: { to: string; name: string; projectName: string }): Promise<any> => {
-            const token = localStorage.getItem("platform_token");
-            const res = await fetch(`${API_BASE_URL}/custom-email/${id}/send`, {
+            const res = await fetchWithPlatformAuth(`${API_BASE_URL}/custom-email/${id}/send`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
