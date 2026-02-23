@@ -3,14 +3,16 @@
 import React from 'react';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Users, Shield } from 'lucide-react';
+import { Users, Shield, BookOpen } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { AuthDocsSheet } from './_components/AuthDocsSheet';
 
 export default function AuthenticationLayout({ children }: { children: React.ReactNode }) {
     const params = useParams();
     const router = useRouter();
     const pathname = usePathname();
     const id = params?.id as string;
+    const [openDocs, setOpenDocs] = React.useState(false);
 
     const tabs = [
         { id: 'users', label: 'Users', icon: Users, path: `/platform/projects/${id}/authentication/users` },
@@ -26,6 +28,10 @@ export default function AuthenticationLayout({ children }: { children: React.Rea
                     <h1 className="text-3xl font-bold text-white tracking-tight">Authentication</h1>
                     <p className="text-gray-400 mt-1">Manage your project's users and authentication methods.</p>
                 </div>
+                <Button variant="outline" size="sm" onClick={() => setOpenDocs(true)}>
+                    <BookOpen className="w-4 h-4 mr-2" />
+                    Docs
+                </Button>
             </div>
 
             <div className="border-b border-white/10">
@@ -56,6 +62,8 @@ export default function AuthenticationLayout({ children }: { children: React.Rea
             <div className="pt-2">
                 {children}
             </div>
+
+            <AuthDocsSheet open={openDocs} onOpenChange={setOpenDocs} />
         </div>
     );
 }

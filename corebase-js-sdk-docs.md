@@ -185,7 +185,7 @@ const fileInput = document.getElementById('fileInput') as HTMLInputElement;
 const file = fileInput.files?.[0];
 
 if (file) {
-  const { data, error } = await corebase.storage.upload(file);
+  const { data, error } = await corebase.storage.upload(file,bucketName);
 
   if (error) {
     console.error('Upload failed:', error);

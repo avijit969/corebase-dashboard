@@ -13,8 +13,10 @@ import {
     UploadCloud,
     Loader2,
     FolderOpen,
-    Menu
+    Menu,
+    BookOpen
 } from 'lucide-react';
+import { StorageDocsSheet } from './StorageDocsSheet';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -47,6 +49,7 @@ export function FileBrowser({ apiKey, bucketName, onToggleSidebar }: FileBrowser
     const [dragActive, setDragActive] = useState(false);
     const [selectedFile, setSelectedFile] = useState<StorageFile | null>(null);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [openDocs, setOpenDocs] = useState(false);
 
     const queryClient = useQueryClient();
 
@@ -203,21 +206,27 @@ export function FileBrowser({ apiKey, bucketName, onToggleSidebar }: FileBrowser
                         /{bucketName}
                     </h2>
                 </div>
-                <div>
-                    <label htmlFor="file-upload" className="cursor-pointer">
-                        <Button variant="default" size="sm" className="bg-white text-black hover:bg-neutral-200 pointer-events-none">
-                            <UploadCloud className="w-4 h-4 mr-2" />
-                            Upload Files
-                        </Button>
-                    </label>
-                    <input
-                        id="file-upload"
-                        type="file"
-                        multiple
-                        className="hidden"
-                        onChange={(e) => e.target.files && handleUpload(e.target.files)}
-                        disabled={isUploading}
-                    />
+                <div className="flex items-center gap-3">
+                    <Button variant="outline" size="sm" onClick={() => setOpenDocs(true)}>
+                        <BookOpen className="w-4 h-4 mr-2" />
+                        Docs
+                    </Button>
+                    <div>
+                        <label htmlFor="file-upload" className="cursor-pointer">
+                            <Button variant="default" size="sm" className="bg-white text-black hover:bg-neutral-200 pointer-events-none">
+                                <UploadCloud className="w-4 h-4 mr-2" />
+                                Upload Files
+                            </Button>
+                        </label>
+                        <input
+                            id="file-upload"
+                            type="file"
+                            multiple
+                            className="hidden"
+                            onChange={(e) => e.target.files && handleUpload(e.target.files)}
+                            disabled={isUploading}
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -318,6 +327,8 @@ export function FileBrowser({ apiKey, bucketName, onToggleSidebar }: FileBrowser
                     </DrawerClose>
                 </DrawerContent>
             </Drawer>
+
+            <StorageDocsSheet open={openDocs} onOpenChange={setOpenDocs} bucketName={bucketName} />
         </div>
     );
 }
