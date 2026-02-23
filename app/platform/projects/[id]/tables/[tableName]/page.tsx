@@ -5,7 +5,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
-import { ArrowLeft, Trash2, Key, Type, Database, Edit2, Link as LinkIcon, TableProperties, FileJson } from 'lucide-react';
+import { ArrowLeft, Trash2, Key, Type, Database, Edit2, Link as LinkIcon, TableProperties, FileJson, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -17,6 +17,7 @@ import { useProjectStore } from '@/lib/stores/project-store';
 import { AddColumnDialog } from '../../_components/AddColumnDialog';
 import { AddForeignKeyDialog } from '../../_components/AddForeignKeyDialog';
 import { TableDataViewer } from '../../_components/TableDataViewer';
+import { DocsSheet } from './_components/DocsSheet';
 import { Link2 } from 'lucide-react';
 
 export default function TableDetailsPage() {
@@ -39,7 +40,7 @@ export default function TableDetailsPage() {
     const [renameDialogOpen, setRenameDialogOpen] = useState(false);
     const [columnToRename, setColumnToRename] = useState<string | null>(null);
     const [newColumnName, setNewColumnName] = useState('');
-
+    const [openDocs, setOpenDocs] = useState(false);
     useEffect(() => {
         if (view === 'schema') setActiveTab('schema');
         else if (view === 'data') setActiveTab('data');
@@ -178,6 +179,13 @@ export default function TableDetailsPage() {
                     <Button variant="destructive" size="sm" onClick={handleDeleteTable}>
                         <Trash2 className="w-4 h-4 mr-2" />
                         Delete Table
+                    </Button>
+                    {/* Docs  Icon To open docs sheet */}
+                    <Button variant="outline" size="sm" onClick={() => {
+                        setOpenDocs(true);
+                    }}>
+                        <BookOpen className="w-4 h-4 mr-2" />
+                        Docs
                     </Button>
                 </div>
             </div>
@@ -333,6 +341,9 @@ export default function TableDetailsPage() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {/* Docs Sheet */}
+            <DocsSheet open={openDocs} onOpenChange={setOpenDocs} tableName={tableName} columns={schema?.columns || []} />
         </div>
     );
 }

@@ -1,3 +1,4 @@
+"use client"
 import React from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,8 +15,7 @@ import {
 import { ProjectDetails } from '../types';
 import { CreateTableDrawer } from './CreateTableDrawer';
 import { toast } from 'sonner';
-import { Badge } from '@/components/ui/badge';
-
+import { useRouter } from 'next/navigation';
 interface ProjectOverviewProps {
     project: ProjectDetails;
     copyToClipboard: (text: string) => void;
@@ -24,7 +24,7 @@ interface ProjectOverviewProps {
 
 export function ProjectOverview({ project, copyToClipboard, refreshProject }: ProjectOverviewProps) {
     const createdDate = project?.meta?.created_at ? new Date(project.meta.created_at).toLocaleDateString() : 'N/A';
-
+    const router = useRouter();
     const handleCopy = (text: string) => {
         copyToClipboard(text);
         toast.success("Copied to clipboard");
@@ -94,7 +94,11 @@ export function ProjectOverview({ project, copyToClipboard, refreshProject }: Pr
                 {project.tables && project.tables.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
                         {project.tables.map((table: any, i: number) => (
-                            <Card key={i} className="bg-neutral-900/40 border-white/5 hover:border-primary-500/30 hover:bg-neutral-900/60 transition-all duration-300 group flex flex-col">
+                            <Card key={i} className="bg-neutral-900/40 border-white/5 hover:border-primary-500/30 hover:bg-neutral-900/60 transition-all duration-300 group flex flex-col"
+                                onClick={() => {
+                                    router.push(`/platform/projects/${project.id}/tables/${table.name}?view=schema`);
+                                }}
+                            >
                                 <CardHeader className="pb-3 card-header-padding-fix">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3 overflow-hidden">
