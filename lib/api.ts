@@ -29,11 +29,11 @@ async function handleResponse<T>(response: Response): Promise<T> {
 
 export const api = {
     auth: {
-        signup: async (email: string, password: string): Promise<any> => {
+        signup: async (email: string, password: string, name: string): Promise<any> => {
             const res = await fetch(`${API_BASE_URL}/platform/auth/signup`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ email, password, name }),
             });
             return handleResponse(res);
         },

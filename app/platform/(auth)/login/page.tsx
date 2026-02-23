@@ -6,47 +6,50 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Layers, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/lib/store/auth-store";
+import * as z from "zod";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+
+const loginSchema = z.object({
+    email: z.email("Invalid email"),
+    password: z.string()
+        .min(6, "Password must be at least 6 characters long")
+        .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/, "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"),
+})
 
 export default function LoginPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
-    const [formData, setFormData] = useState({
-        email: "",
-        password: ""
-    });
+    const { control, handleSubmit } = useForm<z.infer<typeof loginSchema>>({
+        resolver: zodResolver(loginSchema),
+        defaultValues: {
+            email: "",
+            password: "",
+        },
+    })
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const onSubmit = async (data: z.infer<typeof loginSchema>) => {
         setLoading(true);
         try {
-            const response = await api.auth.login(formData.email, formData.password);
-            // Store token
+            const response = await api.auth.login(data.email, data.password);
             if (response.access_token) {
-                // Save to store
                 const setToken = useAuthStore.getState().setToken;
                 const setUser = useAuthStore.getState().setUser;
 
                 setToken(response.access_token);
-
-                // Construct user object from response or form data
-                // Assuming response might contain user details, otherwise use email
                 const user = (response as any).user || {
-                    id: (response as any).user_id || 'user_' + Date.now(),
-                    email: formData.email,
-                    name: (response as any).name || 'User'
+                    id: (response as any).user_id,
+                    email: data.email,
+                    name: (response as any).name
                 };
                 setUser(user);
-
-                // Keep localStorage for compatibility with other parts if any (optional but safe)
                 localStorage.setItem("platform_token", response.access_token);
-
-                console.log("user is", response);
                 toast.success("Welcome back!", {
                     description: "You have successfully signed in."
                 });
@@ -86,33 +89,46 @@ export default function LoginPage() {
                             Enter your credentials to access your account
                         </CardDescription>
                     </CardHeader>
-                    <form onSubmit={handleSubmit}>
+                    <form onSubmit={handleSubmit(onSubmit)}>
                         <CardContent className="grid gap-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">Email</Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    placeholder="name@example.com"
-                                    className="bg-black/50 border-white/10 focus-visible:ring-primary-500 text-white"
-                                    value={formData.email}
-                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                    required
-                                    disabled={loading}
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="password">Password</Label>
-                                <Input
-                                    id="password"
-                                    type="password"
-                                    className="bg-black/50 border-white/10 focus-visible:ring-primary-500 text-white"
-                                    value={formData.password}
-                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                    required
-                                    disabled={loading}
-                                />
-                            </div>
+                            <Controller
+                                name="email"
+                                control={control}
+                                render={({ field, fieldState }) => (
+                                    <Field data-invalid={fieldState.invalid}>
+                                        <FieldLabel htmlFor="email">Email</FieldLabel>
+                                        <Input
+                                            {...field}
+                                            type="email"
+                                            id="email"
+                                            placeholder="name@example.com"
+                                            className="bg-black/50 border-white/10 focus-visible:ring-primary-500 text-white"
+                                        />
+                                        {fieldState.invalid && (
+                                            <FieldError errors={[fieldState.error]} />
+                                        )}
+                                    </Field>
+                                )}
+                            />
+                            <Controller
+                                name="password"
+                                control={control}
+                                render={({ field, fieldState }) => (
+                                    <Field data-invalid={fieldState.invalid}>
+                                        <FieldLabel htmlFor="password">Password</FieldLabel>
+                                        <Input
+                                            {...field}
+                                            type="password"
+                                            id="password"
+                                            placeholder="Enter your password"
+                                            className="bg-black/50 border-white/10 focus-visible:ring-primary-500 text-white"
+                                        />
+                                        {fieldState.invalid && (
+                                            <FieldError errors={[fieldState.error]} />
+                                        )}
+                                    </Field>
+                                )}
+                            />
                         </CardContent>
                         <CardFooter className="flex flex-col gap-4 mt-4">
                             <Button className="w-full bg-primary-600 hover:bg-primary-700 text-white" disabled={loading}>

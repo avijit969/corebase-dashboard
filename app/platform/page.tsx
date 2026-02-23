@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, MoreVertical, Copy, Database, Loader2 } from 'lucide-react';
+import { Plus, Search, MoreVertical, Copy, Database, Loader2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -46,6 +46,8 @@ export default function ProjectsPage() {
     const [creating, setCreating] = useState(false);
     const [token, setToken] = useState<string | null>(null);
     const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+    const [deleteConfirmName, setDeleteConfirmName] = useState('');
+    const [deleting, setDeleting] = useState(false);
     const { setApiKey, setProjectName } = useProjectStore();
     const { setUser } = useAuthStore();
 
@@ -128,17 +130,21 @@ export default function ProjectsPage() {
     };
 
     const handleDeleteProject = async () => {
-        if (!projectToDelete || !token) return;
+        if (!projectToDelete || !token || deleteConfirmName !== projectToDelete.name) return;
 
+        setDeleting(true);
         try {
             await api.projects.delete(projectToDelete.id, token);
             setProjects(projects.filter(p => p.id !== projectToDelete.id));
             setProjectToDelete(null);
+            setDeleteConfirmName('');
             toast.success("Project deleted successfully");
         } catch (error: any) {
             toast.error("Failed to delete project", {
                 description: error.message || "An error occurred."
             });
+        } finally {
+            setDeleting(false);
         }
     };
 
@@ -337,19 +343,54 @@ export default function ProjectsPage() {
             </div>
 
             {/* Delete Confirmation Dialog */}
-            <Dialog open={!!projectToDelete} onOpenChange={(open) => !open && setProjectToDelete(null)}>
-                <DialogContent className="bg-neutral-900 border-white/10 text-white sm:max-w-[425px]">
-                    <DialogHeader>
-                        <DialogTitle>Delete Project</DialogTitle>
-                        <DialogDescription className="text-gray-400">
-                            Are you sure you want to delete <span className="text-white font-semibold">{projectToDelete?.name}</span>? This action cannot be undone.
+            <Dialog open={!!projectToDelete} onOpenChange={(open) => {
+                if (!open) {
+                    setProjectToDelete(null);
+                    setDeleteConfirmName('');
+                }
+            }}>
+                <DialogContent className="bg-neutral-900 border-red-900/50 text-white sm:max-w-[425px] overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-red-500"></div>
+                    <DialogHeader className="pt-4">
+                        <DialogTitle className="flex items-center gap-2 text-red-500">
+                            <AlertTriangle className="w-5 h-5" /> Delete Project
+                        </DialogTitle>
+                        <DialogDescription className="text-gray-400 pt-2">
+                            This action cannot be undone. This will permanently delete the
+                            <span className="text-white font-semibold mx-1">{projectToDelete?.name}</span>
+                            project and remove all associated data.
                         </DialogDescription>
                     </DialogHeader>
-                    <DialogFooter className="gap-2 sm:gap-0">
-                        <Button variant="ghost" onClick={() => setProjectToDelete(null)} className="text-gray-400 hover:text-white hover:bg-white/10">
+
+                    <div className="py-4 space-y-3">
+                        <Label className="text-sm font-medium text-gray-300">
+                            Please type <span className="text-white font-mono bg-black/50 px-1 py-0.5 rounded select-all mb-1 inline-block">{projectToDelete?.name}</span> to confirm.
+                        </Label>
+                        <Input
+                            value={deleteConfirmName}
+                            onChange={(e) => setDeleteConfirmName(e.target.value)}
+                            placeholder={projectToDelete?.name}
+                            className="bg-black/50 border-red-900/30 focus-visible:ring-red-500/50 text-white"
+                        />
+                    </div>
+
+                    <DialogFooter className="gap-2 sm:gap-0 mt-2">
+                        <Button
+                            variant="ghost"
+                            onClick={() => {
+                                setProjectToDelete(null);
+                                setDeleteConfirmName('');
+                            }}
+                            className="text-gray-400 hover:text-white hover:bg-white/10"
+                        >
                             Cancel
                         </Button>
-                        <Button onClick={handleDeleteProject} className="bg-red-600 hover:bg-red-700 text-white border-0">
+                        <Button
+                            onClick={handleDeleteProject}
+                            disabled={deleteConfirmName !== projectToDelete?.name || deleting}
+                            className="bg-red-600 hover:bg-red-700 text-white border-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {deleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Delete Project
                         </Button>
                     </DialogFooter>
